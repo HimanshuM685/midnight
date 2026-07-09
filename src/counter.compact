@@ -1,0 +1,31 @@
+pragma language_version >= 0.16;
+
+import CompactStandardLibrary;
+
+// Public on-chain state
+export ledger round: Counter;
+export ledger owner: Bytes<32>;
+
+// Private state: a secret key held locally by the contract owner
+witness localSecretKey(): Bytes<32>;
+
+// Anyone can deploy; the deployer's public key (hash of their secret) is recorded
+constructor() {
+  owner = disclose(publicKey(localSecretKey()));
+}
+
+// Anyone may increment the public counter
+export circuit increment(): [] {
+  round.increment(1);
+}
+
+// Only the owner (proving knowledge of the secret key) may reset the counter
+export circuit reset(): [] {
+  assert(owner == publicKey(localSecretKey()), "not authorized");
+  round.resetToDefault();
+}
+
+// Derive a public key by hashing the secret with a domain separator
+circuit publicKey(sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "counter:pk"), sk]);
+}
