@@ -1,0 +1,17 @@
+{
+  "name": "@app/counter-contract",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "compact": "compact compile src/counter.compact src/managed/counter",
+    "build": "npm run compact && npm run sync:assets",
+    "build:contract": "npm run compact && npm run sync:assets",
+    "sync:assets": "cp -Rf ./src/managed/counter/keys ../public/zk/counter/ && cp -Rf ./src/managed/counter/zkir ../public/zk/counter/"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "0.16.0",
+    "@midnight-ntwrk/ledger-v8": "^8.0.3"
+  }
+}

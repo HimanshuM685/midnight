@@ -75,6 +75,27 @@ UTXOs, registration flags, and dust state without deploying anything:
 npx tsx scripts/dust-probe.ts
 ```
 
+## Web dApp (browser deploy via 1AM wallet)
+
+`dapp/` is a Next.js app (based on
+[midnight-skills-counter-dapp](https://github.com/tusharpamnani/midnight-skills-counter-dapp))
+that deploys and increments a counter contract straight from the browser using the
+[1AM wallet](https://1am.xyz) — 1AM's ProofStation sponsors all DUST fees, so no
+faucet or dust generation is needed:
+
+```bash
+cd dapp
+npm install
+npm run build   # compiles dapp/contract/src/counter.compact + syncs ZK assets + next build
+npm start       # serves on http://localhost:3000
+```
+
+Open <http://localhost:3000/counter>, connect the 1AM extension, and click
+**Deploy New Counter** — the contract address appears in the UI once the indexer
+confirms it. (The dApp's contract is the minimal increment-only counter; the root
+`src/counter.compact` with the ZK owner-reset remains the contract covered by the
+test suite and the Node deploy pipeline.)
+
 ## Deployment
 
 <!-- DEPLOYMENT_RECORD -->
