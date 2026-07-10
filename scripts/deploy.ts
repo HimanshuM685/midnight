@@ -35,6 +35,15 @@ const logger = pino({
   transport: { target: 'pino-pretty' },
 });
 
+// Network toggle: MIDNIGHT_NETWORK from the shell wins, then .env, then preprod.
+const rootEnvFile = path.resolve(process.cwd(), '.env');
+if (fs.existsSync(rootEnvFile)) {
+  for (const line of fs.readFileSync(rootEnvFile, 'utf8').split('\n')) {
+    const m = line.match(/^([A-Z0-9_]+)=(.*)$/);
+    if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2].trim();
+  }
+}
+
 const network = process.env['MIDNIGHT_NETWORK'] ?? 'preprod';
 const config = getConfig(network);
 const envFile = path.resolve(process.cwd(), `.env.${network}`);
@@ -74,11 +83,24 @@ function resolveContractSecretKey(): Uint8Array {
 
 async function waitForDust(wallet: MidnightWalletProvider, timeoutMs: number): Promise<bigint> {
   logger.info('Waiting for a positive DUST balance (generated from registered NIGHT)...');
+  // Progress heartbeat: the dust-side sync can lag far behind the chain tip,
+  // during which the locally computed balance reads 0 even though generation
+  // is active on-chain. Log applied/relevant indices so stalls are visible.
+  const progressSub = wallet.wallet
+    .state()
+    .pipe(Rx.auditTime(10_000))
+    .subscribe((state) => {
+      const p = state.dust.state.progress as unknown as Record<string, unknown>;
+      logger.info(
+        `Dust sync progress: applied=${p?.['appliedIndex']} relevant=${p?.['highestRelevantWalletIndex']} ` +
+          `connected=${p?.['isConnected']} balance=${state.dust.balance(new Date())}`,
+      );
+    });
   return Rx.firstValueFrom(
     wallet.wallet.state().pipe(
       Rx.map((state) => state.dust.balance(new Date())),
-      Rx.tap((dust) => logger.info(`Current DUST balance: ${dust}`)),
       Rx.filter((dust) => dust > 0n),
+      Rx.tap((dust) => logger.info(`Positive DUST balance: ${dust}`)),
       Rx.timeout({
         each: timeoutMs,
         with: () =>
@@ -86,7 +108,7 @@ async function waitForDust(wallet: MidnightWalletProvider, timeoutMs: number): P
             'NIGHT may not be registered for DUST generation yet, or generation needs more time.')),
       }),
     ),
-  );
+  ).finally(() => progressSub.unsubscribe());
 }
 
 async function main(): Promise<void> {

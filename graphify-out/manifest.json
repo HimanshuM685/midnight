@@ -1,0 +1,87 @@
+{
+  "/Users/fusion/Code/GitRepos/midnight/.claude/settings.local.json": {
+    "mtime": 1783707964.7406313,
+    "ast_hash": "7543236831b2bce3fffdc4527c986eea",
+    "semantic_hash": "7543236831b2bce3fffdc4527c986eea"
+  },
+  "/Users/fusion/Code/GitRepos/midnight/managed/counter/compiler/contract-info.json": {
+    "mtime": 1783634265.351275,
+    "ast_hash": "490db91711d5a161a39d10b1ef7c78f8",
+    "semantic_hash": "490db91711d5a161a39d10b1ef7c78f8"
+  },
+  "/Users/fusion/Code/GitRepos/midnight/managed/counter/contract/index.d.ts": {
+    "mtime": 1783634267.1901975,
+    "ast_hash": "64f867e7ebaadfd55cc531c389af5556",
+    "semantic_hash": "64f867e7ebaadfd55cc531c389af5556"
+  },
+  "/Users/fusion/Code/GitRepos/midnight/managed/counter/contract/index.js": {
+    "mtime": 1783634267.1900728,
+    "ast_hash": "6a45b3e1a083e73887affbb47fd41ba7",
+    "semantic_hash": "6a45b3e1a083e73887affbb47fd41ba7"
+  },
+  "/Users/fusion/Code/GitRepos/midnight/package.json": {
+    "mtime": 1783635107.4557636,
+    "ast_hash": "983320f439a63898f36d5d8ad12989a0",
+    "semantic_hash": "983320f439a63898f36d5d8ad12989a0"
+  },
+  "/Users/fusion/Code/GitRepos/midnight/scripts/deploy.ts": {
+    "mtime": 1783708625.9649625,
+    "ast_hash": "1e4f20f1186d9f1846bc5d4b012a2974",
+    "semantic_hash": "1e4f20f1186d9f1846bc5d4b012a2974"
+  },
+  "/Users/fusion/Code/GitRepos/midnight/scripts/dust-probe.ts": {
+    "mtime": 1783708634.7997308,
+    "ast_hash": "40065efb69506fca272a8f6b4cfa70d7",
+    "semantic_hash": "40065efb69506fca272a8f6b4cfa70d7"
+  },
+  "/Users/fusion/Code/GitRepos/midnight/src/config.ts": {
+    "mtime": 1783634993.0052695,
+    "ast_hash": "a95502902c94d80a3dd7261fb4653f56",
+    "semantic_hash": "a95502902c94d80a3dd7261fb4653f56"
+  },
+  "/Users/fusion/Code/GitRepos/midnight/src/contract.ts": {
+    "mtime": 1783634996.2313125,
+    "ast_hash": "c8c9448481f7129f6ea1de4fbb414345",
+    "semantic_hash": "c8c9448481f7129f6ea1de4fbb414345"
+  },
+  "/Users/fusion/Code/GitRepos/midnight/src/providers.ts": {
+    "mtime": 1783635026.9056787,
+    "ast_hash": "0eb7e67a0a1e2d8c18b24e16cee84e0e",
+    "semantic_hash": "0eb7e67a0a1e2d8c18b24e16cee84e0e"
+  },
+  "/Users/fusion/Code/GitRepos/midnight/src/wallet.ts": {
+    "mtime": 1783637960.405391,
+    "ast_hash": "1926ef7888ee946627f6090ca2e6c9e3",
+    "semantic_hash": "1926ef7888ee946627f6090ca2e6c9e3"
+  },
+  "/Users/fusion/Code/GitRepos/midnight/src/witnesses.ts": {
+    "mtime": 1783634565.9553947,
+    "ast_hash": "7f291d0fca2352f5a0cd577ec17cff2e",
+    "semantic_hash": "7f291d0fca2352f5a0cd577ec17cff2e"
+  },
+  "/Users/fusion/Code/GitRepos/midnight/tests/counter-simulator.ts": {
+    "mtime": 1783634572.0914803,
+    "ast_hash": "40f759e60d2e74bde0907faf871455fa",
+    "semantic_hash": "40f759e60d2e74bde0907faf871455fa"
+  },
+  "/Users/fusion/Code/GitRepos/midnight/tests/counter.test.ts": {
+    "mtime": 1783634580.2894905,
+    "ast_hash": "f4a10463d79d85fc9f3f9e999810178e",
+    "semantic_hash": "f4a10463d79d85fc9f3f9e999810178e"
+  },
+  "/Users/fusion/Code/GitRepos/midnight/tsconfig.json": {
+    "mtime": 1783634476.9088604,
+    "ast_hash": "64d6f6341187b61e61afb1f3d7d45fd0",
+    "semantic_hash": "64d6f6341187b61e61afb1f3d7d45fd0"
+  },
+  "/Users/fusion/Code/GitRepos/midnight/README.md": {
+    "mtime": 1783710535.2390368,
+    "ast_hash": "1b678e612d5a804518ba0c6261ddfa7b",
+    "semantic_hash": "1b678e612d5a804518ba0c6261ddfa7b"
+  },
+  "/Users/fusion/Code/GitRepos/midnight/compose.yml": {
+    "mtime": 1783635066.312868,
+    "ast_hash": "3e85f0c1154a21f53229a7e35eff659c",
+    "semantic_hash": "3e85f0c1154a21f53229a7e35eff659c"
+  }
+}
