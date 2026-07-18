@@ -90,15 +90,23 @@ npm run build   # compiles dapp/contract/src/counter.compact + syncs ZK assets +
 npm start       # serves on http://localhost:3000
 ```
 
-Open <http://localhost:3000/counter>, connect the 1AM extension, and click
-**Deploy New Counter** — the contract address appears in the UI once the indexer
-confirms it. (The dApp's contract is the minimal increment-only counter; the root
+Open <http://localhost:3000/counter> and connect the 1AM extension — the page is
+wired to the deployed preprod contract (address below) and lets you read and
+increment the counter. (The dApp's contract is the minimal increment-only counter; the root
 `src/counter.compact` with the ZK owner-reset remains the contract covered by the
 test suite and the Node deploy pipeline.)
 
 ## Deployment
 
 <!-- DEPLOYMENT_RECORD -->
-**Preprod deployment in progress** — the wallet is funded (3,000,000,000 tNIGHT) and
-registered for DUST generation; the deploy transaction submits once enough DUST
-accrues. The contract address will be recorded here and in `deployments/preprod.json`.
+**Deployed to preprod.**
+
+| | |
+|---|---|
+| **Contract Address** | `0x756a3cdb7eed760a37848d6cb2e009c4a0f898fb266a14bece7b4f4b5915ff15` |
+| **Deploy Tx** | `0xaf121c9f0bd92017b051a5dce42bc7f365be09d833b4a1cddd4f90f9fc0018b1` |
+| **Block Height** | 1,713,457 |
+| **Network** | Midnight preprod |
+| **Explorer** | [View contract](https://preprod.midnightexplorer.com/contracts/0x756a3cdb7eed760a37848d6cb2e009c4a0f898fb266a14bece7b4f4b5915ff15) |
+
+Deployment record also stored in [`deployments/preprod.json`](deployments/preprod.json).

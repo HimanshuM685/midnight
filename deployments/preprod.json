@@ -1,0 +1,9 @@
+{
+  "network": "preprod",
+  "contractAddress": "0x756a3cdb7eed760a37848d6cb2e009c4a0f898fb266a14bece7b4f4b5915ff15",
+  "deployTxId": "0xaf121c9f0bd92017b051a5dce42bc7f365be09d833b4a1cddd4f90f9fc0018b1",
+  "blockHeight": 1713457,
+  "explorer": "https://preprod.midnightexplorer.com/contracts/0x756a3cdb7eed760a37848d6cb2e009c4a0f898fb266a14bece7b4f4b5915ff15",
+  "deployedVia": "dapp (1AM wallet connector)",
+  "deployedAt": "2026-07-18"
+}

@@ -1,12 +1,8 @@
 'use client';
 
-import { ContractState, sampleSigningKey } from '@midnight-ntwrk/compact-runtime';
+import { ContractState } from '@midnight-ntwrk/compact-runtime';
 import { CompiledContract } from '@midnight-ntwrk/compact-js';
-import {
-  createUnprovenDeployTx,
-  submitTxAsync,
-  submitCallTxAsync,
-} from '@midnight-ntwrk/midnight-js-contracts';
+import { submitCallTxAsync } from '@midnight-ntwrk/midnight-js-contracts';
 import { Counter } from '@contract/index';
 
 import type { ConnectedSession } from './midnight';
@@ -40,25 +36,6 @@ export async function getCounterValue(
     console.error('Failed to query counter state:', e);
     return null;
   }
-}
-
-export async function deployCounter(session: ConnectedSession): Promise<string> {
-  const compiledContract = makeCompiledContract();
-
-  const deployTxData = await (createUnprovenDeployTx as any)(
-    { zkConfigProvider: session.providers.zkConfigProvider, walletProvider: session.providers.walletProvider },
-    { compiledContract, args: [], privateStateId: 'counterPrivateState', initialPrivateState: { privateCounter: 0 }, signingKey: sampleSigningKey() },
-  );
-
-  const contractAddress = deployTxData.public.contractAddress;
-
-  await (submitTxAsync as any)(session.providers, { unprovenTx: deployTxData.private.unprovenTx });
-
-  await session.providers.privateStateProvider.setContractAddress(contractAddress);
-  await session.providers.privateStateProvider.set('counterPrivateState', deployTxData.private.initialPrivateState);
-  await session.providers.privateStateProvider.setSigningKey(contractAddress, deployTxData.private.signingKey);
-
-  return contractAddress;
 }
 
 export async function incrementCounter(

@@ -2,12 +2,16 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { detectWallet, createConnectedSession, pollForState } from '@/lib/midnight';
-import { deployCounter, incrementCounter, decodeCounterValue } from '@/lib/counter';
+import { incrementCounter, decodeCounterValue } from '@/lib/counter';
 import type { ConnectedSession } from '@/lib/midnight';
+
+/** The counter contract deployed to preprod — see deployments/preprod.json. */
+const CONTRACT_ADDRESS =
+  '0x756a3cdb7eed760a37848d6cb2e009c4a0f898fb266a14bece7b4f4b5915ff15';
 
 export default function CounterClient() {
   const [session, setSession] = useState<ConnectedSession | null>(null);
-  const [contractAddress, setContractAddress] = useState('');
+  const [contractAddress] = useState(CONTRACT_ADDRESS);
   const [counterValue, setCounterValue] = useState<bigint | null>(null);
   const [error, setError] = useState('');
   const [connecting, setConnecting] = useState(false);
@@ -58,36 +62,21 @@ export default function CounterClient() {
       const api = await wallet.connect('preprod');
       const s = await createConnectedSession(api, '/zk/counter/');
       setSession(s);
+      // Load the current counter value from the deployed contract.
+      try {
+        const value = decodeCounterValue(
+          await pollForState(s.config.indexerUri, CONTRACT_ADDRESS),
+        );
+        if (mountedRef.current) setCounterValue(value);
+      } catch {
+        /* value stays "—" until refresh */
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to connect wallet');
     } finally {
       setConnecting(false);
     }
   }, []);
-
-  const handleDeploy = useCallback(async () => {
-    if (!session) return;
-    await withLoading('Deploying counter contract…', async (setStatus) => {
-      const addr = await deployCounter(session);
-      setContractAddress(addr);
-
-      setStatus('Waiting for indexer…');
-      await pollForState(
-        session.config.indexerUri,
-        addr,
-        (attempt) => setStatus(`Waiting for indexer (attempt ${attempt})…`),
-      );
-
-      const value = decodeCounterValue(
-        await pollForState(
-          session.config.indexerUri,
-          addr,
-          (attempt) => setStatus(`Reading counter state (attempt ${attempt})…`),
-        ),
-      );
-      setCounterValue(value);
-    });
-  }, [session, withLoading]);
 
   const handleIncrement = useCallback(async () => {
     if (!session || !contractAddress) return;
@@ -124,12 +113,6 @@ export default function CounterClient() {
       setError(e instanceof Error ? e.message : 'Refresh failed');
     }
   }, [session, contractAddress]);
-
-  const reset = useCallback(() => {
-    setContractAddress('');
-    setCounterValue(null);
-    setError('');
-  }, []);
 
   if (walletInstalled === false) {
     return (
@@ -184,17 +167,6 @@ export default function CounterClient() {
         </div>
       )}
 
-      {session && !contractAddress && !busy && (
-        <div className="space-y-4">
-          <button
-            onClick={handleDeploy}
-            className="w-full h-11 rounded-full bg-zinc-900 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-          >
-            Deploy New Counter
-          </button>
-        </div>
-      )}
-
       {session && contractAddress && (
         <div className="space-y-6">
           <div className="rounded-lg border border-zinc-200 p-6 text-center dark:border-zinc-800">
@@ -227,22 +199,6 @@ export default function CounterClient() {
             >
               refresh
             </button>
-            <button
-              onClick={reset}
-              disabled={busy}
-              className="text-xs text-zinc-400 underline underline-offset-2 hover:text-zinc-600 disabled:opacity-40 dark:hover:text-zinc-300"
-            >
-              new contract
-            </button>
-          </div>
-        </div>
-      )}
-
-      {busy && !contractAddress && (
-        <div className="mt-6 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-4 py-2 text-xs text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-zinc-400 animate-pulse" />
-            {statusMessage}
           </div>
         </div>
       )}
