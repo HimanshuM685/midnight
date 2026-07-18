@@ -44,6 +44,14 @@ export async function incrementCounter(
 ): Promise<void> {
   const compiledContract = makeCompiledContract();
 
+  // The contract uses vacant witnesses, but submitCallTxAsync still expects a
+  // private state entry to exist. Seed it for the deployed contract address.
+  const { privateStateProvider } = session.providers;
+  await privateStateProvider.setContractAddress(contractAddress);
+  if ((await privateStateProvider.get('counterPrivateState')) === null) {
+    await privateStateProvider.set('counterPrivateState', { privateCounter: 0 });
+  }
+
   await submitCallTxAsync(session.providers as any, {
     compiledContract,
     contractAddress,

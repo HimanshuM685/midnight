@@ -11,8 +11,8 @@ export default function Home() {
           Counter DApp
         </h1>
         <p className="mt-4 max-w-md text-base leading-7 text-zinc-600 dark:text-zinc-400">
-          A privacy-preserving counter smart contract on Midnight Network.
-          Deploy, increment, and query state — all with zero gas fees via
+          A privacy-preserving counter smart contract deployed on Midnight
+          preprod. Increment and query state — all with zero gas fees via
           the 1AM wallet.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -40,9 +40,18 @@ export default function Home() {
             </p>
           </div>
           <div className="rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-            <h3 className="text-sm font-semibold">2. Deploy Contract</h3>
+            <h3 className="text-sm font-semibold">2. Live on Preprod</h3>
             <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-              Deploy a fresh counter contract. 1AM sponsors all fees.
+              Wired to the deployed contract{" "}
+              <a
+                href="https://preprod.midnightexplorer.com/contracts/0x756a3cdb7eed760a37848d6cb2e009c4a0f898fb266a14bece7b4f4b5915ff15"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono underline"
+              >
+                0x756a…ff15
+              </a>
+              . No deploy step needed.
             </p>
           </div>
           <div className="rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">

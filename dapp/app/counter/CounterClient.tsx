@@ -8,10 +8,11 @@ import type { ConnectedSession } from '@/lib/midnight';
 /** The counter contract deployed to preprod — see deployments/preprod.json. */
 const CONTRACT_ADDRESS =
   '0x756a3cdb7eed760a37848d6cb2e009c4a0f898fb266a14bece7b4f4b5915ff15';
+/** midnight-js APIs expect the address without the 0x prefix. */
+const CONTRACT_ADDRESS_RAW = CONTRACT_ADDRESS.slice(2);
 
 export default function CounterClient() {
   const [session, setSession] = useState<ConnectedSession | null>(null);
-  const [contractAddress] = useState(CONTRACT_ADDRESS);
   const [counterValue, setCounterValue] = useState<bigint | null>(null);
   const [error, setError] = useState('');
   const [connecting, setConnecting] = useState(false);
@@ -65,7 +66,7 @@ export default function CounterClient() {
       // Load the current counter value from the deployed contract.
       try {
         const value = decodeCounterValue(
-          await pollForState(s.config.indexerUri, CONTRACT_ADDRESS),
+          await pollForState(s.config.indexerUri, CONTRACT_ADDRESS_RAW),
         );
         if (mountedRef.current) setCounterValue(value);
       } catch {
@@ -79,40 +80,40 @@ export default function CounterClient() {
   }, []);
 
   const handleIncrement = useCallback(async () => {
-    if (!session || !contractAddress) return;
+    if (!session) return;
     await withLoading('Incrementing (proving + submitting)…', async (setStatus) => {
-      await incrementCounter(session, contractAddress);
+      await incrementCounter(session, CONTRACT_ADDRESS_RAW);
 
       setStatus('Waiting for indexer…');
       await pollForState(
         session.config.indexerUri,
-        contractAddress,
+        CONTRACT_ADDRESS_RAW,
         (attempt) => setStatus(`Waiting for indexer (attempt ${attempt})…`),
       );
 
       const value = decodeCounterValue(
         await pollForState(
           session.config.indexerUri,
-          contractAddress,
+          CONTRACT_ADDRESS_RAW,
           (attempt) => setStatus(`Reading updated state (attempt ${attempt})…`),
         ),
       );
       setCounterValue(value);
     });
-  }, [session, contractAddress, withLoading]);
+  }, [session, withLoading]);
 
   const handleRefresh = useCallback(async () => {
-    if (!session || !contractAddress) return;
+    if (!session) return;
     setError('');
     try {
       const value = decodeCounterValue(
-        await pollForState(session.config.indexerUri, contractAddress),
+        await pollForState(session.config.indexerUri, CONTRACT_ADDRESS_RAW),
       );
       setCounterValue(value);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Refresh failed');
     }
-  }, [session, contractAddress]);
+  }, [session]);
 
   if (walletInstalled === false) {
     return (
@@ -167,7 +168,7 @@ export default function CounterClient() {
         </div>
       )}
 
-      {session && contractAddress && (
+      {session && (
         <div className="space-y-6">
           <div className="rounded-lg border border-zinc-200 p-6 text-center dark:border-zinc-800">
             <p className="text-xs text-zinc-400 uppercase tracking-wider mb-1">Counter Value</p>
@@ -187,7 +188,7 @@ export default function CounterClient() {
           <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-xs dark:border-zinc-800 dark:bg-zinc-900/50">
             <p className="text-zinc-500">
               <span className="text-zinc-400">Contract: </span>
-              <span className="font-mono text-zinc-700 dark:text-zinc-300 break-all">{contractAddress}</span>
+              <span className="font-mono text-zinc-700 dark:text-zinc-300 break-all">{CONTRACT_ADDRESS}</span>
             </p>
           </div>
 
