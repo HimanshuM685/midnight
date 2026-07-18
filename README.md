@@ -4,6 +4,10 @@ A privacy-preserving counter contract written in [Compact](https://docs.midnight
 
 Anyone can increment the public counter; only the owner — proving knowledge of a secret key inside a zero-knowledge circuit, without revealing it — can reset it.
 
+## Product Idea
+
+The idea: a minimal but complete demonstration of Midnight's core value — selective privacy on a public ledger. A shared counter that anyone can bump is deliberately the simplest possible public state, so all attention goes to the privacy mechanism: administrative control (reset) is gated not by an on-chain address or access list, but by a zero-knowledge proof of knowledge of a secret key that never leaves the owner's machine. The same pattern — public state, privately-authorized mutations — scales up to real products like anonymous voting, private loyalty points, or compliance-gated transfers, and this repo is the smallest end-to-end template for it: Compact contract → local ZK tests → preprod deployment → browser dApp with fee-sponsored transactions.
+
 ## Contract
 
 `src/counter.compact` (language ≥ 0.16, compiled with `compactc 0.31.1`):
@@ -11,6 +15,27 @@ Anyone can increment the public counter; only the owner — proving knowledge of
 - **Public ledger**: `round: Counter`, `owner: Bytes<32>` (a hash-derived public key)
 - **Witness (private state)**: `localSecretKey(): Bytes<32>` — supplied locally, never published
 - **Circuits**: `increment()` (anyone), `reset()` (owner only, enforced by ZK proof)
+
+## Public State vs Private Witness
+
+Midnight contracts split their state into two worlds:
+
+- **Public ledger state** lives on-chain and is visible to everyone. In this contract
+  that's `round` (the counter value) and `owner` (a *hash* of the owner's public key).
+  Every node and every explorer can read these — they are the shared, verifiable
+  source of truth.
+- **Private witness state** never touches the chain. The `localSecretKey()` witness is
+  a function the *local* runtime answers from the caller's own machine. When the owner
+  calls `reset()`, the circuit consumes the secret key **inside a zero-knowledge
+  proof**: the network verifies the proof that
+  `hash(localSecretKey()) == owner` holds, without the key (or any bits of it) ever
+  appearing in the transaction. Anyone inspecting the ledger sees only that a valid
+  reset happened — not who holds the key or what the key is.
+
+So `increment()` needs no witness at all (anyone may call it), while `reset()` is a
+private-input circuit: public effect, private authorization. The test suite
+(`tests/counter.test.ts`) explicitly asserts the secret key never appears in the
+public ledger state.
 
 ## Prerequisites
 
@@ -110,3 +135,13 @@ test suite and the Node deploy pipeline.)
 | **Explorer** | [View contract](https://preprod.midnightexplorer.com/contracts/0x756a3cdb7eed760a37848d6cb2e009c4a0f898fb266a14bece7b4f4b5915ff15) |
 
 Deployment record also stored in [`deployments/preprod.json`](deployments/preprod.json).
+
+### Screenshots
+
+Successful compile (`npm run compact`) with the contract circuits listed:
+
+![Compile output with circuits](screenshots/CompileOutput.png)
+
+Contract deployed on preprod, address and DEPLOYED status shown in the explorer:
+
+![Deployed contract in Midnight explorer](screenshots/ContractExploer.png)
