@@ -34,7 +34,7 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
             id="connect-wallet-btn"
             className="btn btn-primary"
             onClick={onConnect}
-            disabled={connecting || !laceInstalled}
+            disabled={connecting}
           >
             {connecting ? (
               <>
@@ -81,19 +81,26 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
       )}
 
       {/* Error Notices: wallet not installed, rejected, network mismatch */}
-      {!laceInstalled && (
+      {!laceInstalled && !connected && (
         <div className="error-alert">
           <AlertCircle size={18} />
           <div>
-            <strong>Lace Wallet Not Detected:</strong> Please install the{" "}
-            <a
-              href="https://chromewebstore.google.com"
-              target="_blank"
-              rel="noreferrer"
+            <strong>Lace Extension Not Detected Yet:</strong> If you just unlocked Lace, please{" "}
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#38bdf8",
+                textDecoration: "underline",
+                cursor: "pointer",
+                padding: 0,
+                fontSize: "inherit",
+              }}
             >
-              Midnight Lace Browser Extension
-            </a>{" "}
-            and refresh the page.
+              refresh this page
+            </button>{" "}
+            or click the Lace icon in your browser toolbar to grant site access.
           </div>
         </div>
       )}

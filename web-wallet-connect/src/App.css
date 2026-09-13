@@ -131,6 +131,44 @@ body {
   box-shadow: 0 0 10px var(--accent-emerald);
 }
 
+.dot.detected {
+  background-color: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+.guide-box {
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+}
+
+.guide-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #38bdf8;
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+}
+
+.guide-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+.guide-item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
 .wallet-address {
   font-family: var(--font-mono);
   font-size: 0.85rem;

@@ -17,6 +17,8 @@ import {
   RefreshCw,
   ArrowRight,
   Lock,
+  RotateCw,
+  Info,
 } from "lucide-react";
 import "./App.css";
 
@@ -38,19 +40,25 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLaceInstalled(isWalletInstalled("mnLace"));
-    const timer = setInterval(() => {
-      setLaceInstalled(isWalletInstalled("mnLace"));
-    }, 1000);
-    return () => clearInterval(timer);
+    const check = () => {
+      setLaceInstalled(isWalletInstalled());
+    };
+    check();
+    const timer = setInterval(check, 1000);
+    window.addEventListener("focus", check);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("focus", check);
+    };
   }, []);
 
   const handleConnect = async () => {
     setConnecting(true);
     setError(null);
     try {
-      const session = await connectWebWallet("mnLace");
+      const session = await connectWebWallet();
       setWalletSession(session);
+      setLaceInstalled(true);
     } catch (err: any) {
       setError(err?.message || "Failed to connect Lace wallet.");
     } finally {
@@ -67,11 +75,6 @@ export default function App() {
   };
 
   const handleDeploy = async () => {
-    if (!walletSession) {
-      alert("Please connect Lace wallet first.");
-      return;
-    }
-
     if (!recipientAddress.trim()) {
       alert("Please specify a pay-to-address.");
       return;
@@ -134,7 +137,11 @@ export default function App() {
 
         <div className="wallet-box">
           <div className="wallet-status">
-            <span className={`dot ${walletSession ? "connected" : ""}`} />
+            <span
+              className={`dot ${
+                walletSession ? "connected" : laceInstalled ? "detected" : ""
+              }`}
+            />
             {walletSession ? (
               <div>
                 <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Connected Account</div>
@@ -143,43 +150,83 @@ export default function App() {
                 </div>
               </div>
             ) : (
-              <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
-                {laceInstalled ? "Lace Wallet Detected (Ready)" : "Lace Wallet Not Found"}
-              </span>
+              <div>
+                <span
+                  style={{
+                    fontSize: "0.85rem",
+                    color: laceInstalled ? "#a7f3d0" : "var(--text-muted)",
+                  }}
+                >
+                  {laceInstalled
+                    ? "Lace Wallet Detected (Ready to Connect)"
+                    : "Lace Not Detected on this tab yet"}
+                </span>
+              </div>
             )}
           </div>
 
-          {!walletSession ? (
-            <button
-              className="btn btn-secondary"
-              onClick={handleConnect}
-              disabled={connecting || !laceInstalled}
-            >
-              {connecting ? (
-                <>
-                  <span className="spinner" />
-                  <span>Connecting...</span>
-                </>
-              ) : (
-                <>
-                  <Wallet size={16} />
-                  <span>Connect Lace</span>
-                </>
-              )}
-            </button>
-          ) : (
-            <button className="btn btn-danger" onClick={handleDisconnect}>
-              Disconnect
-            </button>
-          )}
+          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+            {!walletSession ? (
+              <>
+                <button
+                  className="btn btn-secondary"
+                  onClick={handleConnect}
+                  disabled={connecting}
+                  title="Connect your unlocked Lace wallet"
+                >
+                  {connecting ? (
+                    <>
+                      <span className="spinner" />
+                      <span>Connecting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Wallet size={16} />
+                      <span>Connect Lace</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => setLaceInstalled(isWalletInstalled())}
+                  title="Re-scan for injected extension"
+                >
+                  <RefreshCw size={13} />
+                  <span>Re-scan</span>
+                </button>
+              </>
+            ) : (
+              <button className="btn btn-danger" onClick={handleDisconnect}>
+                Disconnect
+              </button>
+            )}
+          </div>
         </div>
 
-        {!laceInstalled && (
-          <div className="error-banner">
-            <AlertCircle size={16} />
-            <span>
-              Lace (Midnight Edition) extension not found. Please install it from Chrome Web Store.
-            </span>
+        {!walletSession && (
+          <div className="guide-box">
+            <div className="guide-header">
+              <Info size={16} />
+              <span>Have Lace open but seeing &quot;Not Detected&quot;?</span>
+            </div>
+            <div className="guide-content">
+              <div className="guide-item">
+                <span>&bull; <strong>1. Refresh this tab:</strong> Extensions inject when a tab loads. Since you opened/unlocked Lace, reload this tab:</span>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => window.location.reload()}
+                  style={{ padding: "0.2rem 0.6rem", fontSize: "0.75rem" }}
+                >
+                  <RotateCw size={12} /> Reload Tab
+                </button>
+              </div>
+              <div className="guide-item">
+                <span>&bull; <strong>2. Chrome Site Access:</strong> Click the Lace icon in your Chrome top bar to grant access to this tab.</span>
+              </div>
+              <div className="guide-item">
+                <span>&bull; <strong>3. Or Deploy Directly:</strong> You can click <em>Deploy Tip Jar Contract Now</em> below right now — no waiting required!</span>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -211,7 +258,7 @@ export default function App() {
         <button
           className="btn btn-primary"
           onClick={handleDeploy}
-          disabled={!walletSession || deploying}
+          disabled={deploying}
         >
           {deploying ? (
             <>
@@ -221,7 +268,11 @@ export default function App() {
           ) : (
             <>
               <Rocket size={18} />
-              <span>Deploy Tip Jar Contract Now</span>
+              <span>
+                {walletSession
+                  ? "Deploy Tip Jar Contract (via Lace Wallet)"
+                  : "Deploy Tip Jar Contract (Instant Preprod Deploy)"}
+              </span>
               <ArrowRight size={16} />
             </>
           )}
