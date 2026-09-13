@@ -1,0 +1,28 @@
+{
+  "name": "midnight-zk-tipjar",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Privacy-preserving Tip Jar dApp on Midnight Network with Compact ZK circuits and Lace wallet integration.",
+  "workspaces": [
+    "contract",
+    "deploy",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm --workspace=frontend run dev",
+    "build": "npm --workspace=frontend run build",
+    "deploy:preprod": "npm --workspace=deploy run deploy:preprod",
+    "compile:contract": "npm --workspace=contract run compile"
+  },
+  "keywords": [
+    "midnight-network",
+    "compact",
+    "zero-knowledge",
+    "zk-snarks",
+    "lace-wallet",
+    "tipjar",
+    "privacy"
+  ],
+  "author": "Himanshu Malik",
+  "license": "Apache-2.0"
+}
