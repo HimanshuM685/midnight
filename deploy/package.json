@@ -1,0 +1,23 @@
+{
+  "name": "tipjar-deploy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Headless deployment script for Midnight Tip Jar smart contract to Preprod testnet.",
+  "type": "module",
+  "scripts": {
+    "deploy:preprod": "tsx deploy.ts"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/midnight-js-contracts": "^4.0.0",
+    "@midnight-ntwrk/midnight-js-fetch-zk-config-provider": "^2.0.2",
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "^2.0.2",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "^2.0.2",
+    "@midnight-ntwrk/midnight-js-level-private-state-provider": "^2.0.2",
+    "@midnight-ntwrk/wallet": "^4.0.0",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
