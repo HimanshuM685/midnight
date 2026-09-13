@@ -2,6 +2,11 @@
   command = "npm run build"
   publish = "dist"
 
+[build.environment]
+  VITE_CONTRACT_ADDRESS = "02005a7698e6ffbc148c2b7617b43b6dc008985172288339572ad1881512aa643b2f"
+  VITE_RECIPIENT_ADDRESS = "mn_addr_preprod1qz603evv82d8q7c040d9hswvx774hkmz7v9593z7v8fwn62g6f5su3a07t"
+  VITE_NETWORK_ID = "preprod"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

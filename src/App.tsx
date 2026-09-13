@@ -2,7 +2,7 @@ import React from "react";
 import { WalletConnect } from "./components/WalletConnect";
 import { CircuitCall } from "./components/CircuitCall";
 import { useMidnight } from "./hooks/useMidnight";
-import { Shield, Sparkles, Lock, ExternalLink, Info, CheckCircle2 } from "lucide-react";
+import { Shield, Sparkles, Lock, Info, CheckCircle2 } from "lucide-react";
 import "./App.css";
 
 export default function App() {

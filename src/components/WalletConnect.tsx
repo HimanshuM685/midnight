@@ -109,7 +109,16 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
         <div className="error-alert">
           <AlertCircle size={18} />
           <div>
-            <strong>Connection Error:</strong> {error}
+            <strong>
+              {/network mismatch/i.test(error)
+                ? "Network Mismatch:"
+                : /rejected/i.test(error)
+                  ? "User Rejected:"
+                  : /not installed|not detected/i.test(error)
+                    ? "Wallet Not Installed:"
+                    : "Connection Error:"}
+            </strong>{" "}
+            {error}
           </div>
         </div>
       )}

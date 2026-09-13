@@ -1,0 +1,1429 @@
+import {
+  __commonJS,
+  __toESM
+} from "./chunk-IKZWERSR.js";
+
+// (disabled):node_modules/object-inspect/util.inspect
+var require_util = __commonJS({
+  "(disabled):node_modules/object-inspect/util.inspect"() {
+  }
+});
+
+// node_modules/object-inspect/index.js
+var require_object_inspect = __commonJS({
+  "node_modules/object-inspect/index.js"(exports, module) {
+    var hasMap = typeof Map === "function" && Map.prototype;
+    var mapSizeDescriptor = Object.getOwnPropertyDescriptor && hasMap ? Object.getOwnPropertyDescriptor(Map.prototype, "size") : null;
+    var mapSize = hasMap && mapSizeDescriptor && typeof mapSizeDescriptor.get === "function" ? mapSizeDescriptor.get : null;
+    var mapForEach = hasMap && Map.prototype.forEach;
+    var hasSet = typeof Set === "function" && Set.prototype;
+    var setSizeDescriptor = Object.getOwnPropertyDescriptor && hasSet ? Object.getOwnPropertyDescriptor(Set.prototype, "size") : null;
+    var setSize = hasSet && setSizeDescriptor && typeof setSizeDescriptor.get === "function" ? setSizeDescriptor.get : null;
+    var setForEach = hasSet && Set.prototype.forEach;
+    var hasWeakMap = typeof WeakMap === "function" && WeakMap.prototype;
+    var weakMapHas = hasWeakMap ? WeakMap.prototype.has : null;
+    var hasWeakSet = typeof WeakSet === "function" && WeakSet.prototype;
+    var weakSetHas = hasWeakSet ? WeakSet.prototype.has : null;
+    var hasWeakRef = typeof WeakRef === "function" && WeakRef.prototype;
+    var weakRefDeref = hasWeakRef ? WeakRef.prototype.deref : null;
+    var booleanValueOf = Boolean.prototype.valueOf;
+    var objectToString = Object.prototype.toString;
+    var functionToString = Function.prototype.toString;
+    var $match = String.prototype.match;
+    var $slice = String.prototype.slice;
+    var $replace = String.prototype.replace;
+    var $toUpperCase = String.prototype.toUpperCase;
+    var $toLowerCase = String.prototype.toLowerCase;
+    var $test = RegExp.prototype.test;
+    var $concat = Array.prototype.concat;
+    var $join = Array.prototype.join;
+    var $arrSlice = Array.prototype.slice;
+    var $floor = Math.floor;
+    var bigIntValueOf = typeof BigInt === "function" ? BigInt.prototype.valueOf : null;
+    var gOPS = Object.getOwnPropertySymbols;
+    var symToString = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? Symbol.prototype.toString : null;
+    var hasShammedSymbols = typeof Symbol === "function" && typeof Symbol.iterator === "object";
+    var toStringTag = typeof Symbol === "function" && Symbol.toStringTag && (typeof Symbol.toStringTag === hasShammedSymbols ? "object" : "symbol") ? Symbol.toStringTag : null;
+    var isEnumerable = Object.prototype.propertyIsEnumerable;
+    var gPO = (typeof Reflect === "function" ? Reflect.getPrototypeOf : Object.getPrototypeOf) || ([].__proto__ === Array.prototype ? function(O) {
+      return O.__proto__;
+    } : null);
+    function addNumericSeparator(num, str) {
+      if (num === Infinity || num === -Infinity || num !== num || num && num > -1e3 && num < 1e3 || $test.call(/e/, str)) {
+        return str;
+      }
+      var sepRegex = /[0-9](?=(?:[0-9]{3})+(?![0-9]))/g;
+      if (typeof num === "number") {
+        var int = num < 0 ? -$floor(-num) : $floor(num);
+        if (int !== num) {
+          var intStr = String(int);
+          var dec = $slice.call(str, intStr.length + 1);
+          return $replace.call(intStr, sepRegex, "$&_") + "." + $replace.call($replace.call(dec, /([0-9]{3})/g, "$&_"), /_$/, "");
+        }
+      }
+      return $replace.call(str, sepRegex, "$&_");
+    }
+    var utilInspect = require_util();
+    var inspectCustom = utilInspect.custom;
+    var inspectSymbol = isSymbol(inspectCustom) ? inspectCustom : null;
+    var quotes = {
+      __proto__: null,
+      "double": '"',
+      single: "'"
+    };
+    var quoteREs = {
+      __proto__: null,
+      "double": /(["\\])/g,
+      single: /(['\\])/g
+    };
+    module.exports = function inspect_(obj, options, depth, seen) {
+      var opts = options || {};
+      if (has(opts, "quoteStyle") && !has(quotes, opts.quoteStyle)) {
+        throw new TypeError('option "quoteStyle" must be "single" or "double"');
+      }
+      if (has(opts, "maxStringLength") && (typeof opts.maxStringLength === "number" ? opts.maxStringLength < 0 && opts.maxStringLength !== Infinity : opts.maxStringLength !== null)) {
+        throw new TypeError('option "maxStringLength", if provided, must be a positive integer, Infinity, or `null`');
+      }
+      var customInspect = has(opts, "customInspect") ? opts.customInspect : true;
+      if (typeof customInspect !== "boolean" && customInspect !== "symbol") {
+        throw new TypeError("option \"customInspect\", if provided, must be `true`, `false`, or `'symbol'`");
+      }
+      if (has(opts, "indent") && opts.indent !== null && opts.indent !== "	" && !(parseInt(opts.indent, 10) === opts.indent && opts.indent > 0)) {
+        throw new TypeError('option "indent" must be "\\t", an integer > 0, or `null`');
+      }
+      if (has(opts, "numericSeparator") && typeof opts.numericSeparator !== "boolean") {
+        throw new TypeError('option "numericSeparator", if provided, must be `true` or `false`');
+      }
+      var numericSeparator = opts.numericSeparator;
+      if (typeof obj === "undefined") {
+        return "undefined";
+      }
+      if (obj === null) {
+        return "null";
+      }
+      if (typeof obj === "boolean") {
+        return obj ? "true" : "false";
+      }
+      if (typeof obj === "string") {
+        return inspectString(obj, opts);
+      }
+      if (typeof obj === "number") {
+        if (obj === 0) {
+          return Infinity / obj > 0 ? "0" : "-0";
+        }
+        var str = String(obj);
+        return numericSeparator ? addNumericSeparator(obj, str) : str;
+      }
+      if (typeof obj === "bigint") {
+        var bigIntStr = String(obj) + "n";
+        return numericSeparator ? addNumericSeparator(obj, bigIntStr) : bigIntStr;
+      }
+      var maxDepth = typeof opts.depth === "undefined" ? 5 : opts.depth;
+      if (typeof depth === "undefined") {
+        depth = 0;
+      }
+      if (depth >= maxDepth && maxDepth > 0 && typeof obj === "object") {
+        return isArray(obj) ? "[Array]" : "[Object]";
+      }
+      var indent = getIndent(opts, depth);
+      if (typeof seen === "undefined") {
+        seen = [];
+      } else if (indexOf(seen, obj) >= 0) {
+        return "[Circular]";
+      }
+      function inspect2(value, from, noIndent) {
+        if (from) {
+          seen = $arrSlice.call(seen);
+          seen.push(from);
+        }
+        if (noIndent) {
+          var newOpts = {
+            depth: opts.depth
+          };
+          if (has(opts, "quoteStyle")) {
+            newOpts.quoteStyle = opts.quoteStyle;
+          }
+          return inspect_(value, newOpts, depth + 1, seen);
+        }
+        return inspect_(value, opts, depth + 1, seen);
+      }
+      if (typeof obj === "function" && !isRegExp(obj)) {
+        var name = nameOf(obj);
+        var keys = arrObjKeys(obj, inspect2);
+        return "[Function" + (name ? ": " + name : " (anonymous)") + "]" + (keys.length > 0 ? " { " + $join.call(keys, ", ") + " }" : "");
+      }
+      if (isSymbol(obj)) {
+        var symString = hasShammedSymbols ? $replace.call(String(obj), /^(Symbol\(.*\))_[^)]*$/, "$1") : symToString.call(obj);
+        return typeof obj === "object" && !hasShammedSymbols ? markBoxed(symString) : symString;
+      }
+      if (isElement(obj)) {
+        var s = "<" + $toLowerCase.call(String(obj.nodeName));
+        var attrs = obj.attributes || [];
+        for (var i = 0; i < attrs.length; i++) {
+          s += " " + attrs[i].name + "=" + wrapQuotes(quote(attrs[i].value), "double", opts);
+        }
+        s += ">";
+        if (obj.childNodes && obj.childNodes.length) {
+          s += "...";
+        }
+        s += "</" + $toLowerCase.call(String(obj.nodeName)) + ">";
+        return s;
+      }
+      if (isArray(obj)) {
+        if (obj.length === 0) {
+          return "[]";
+        }
+        var xs = arrObjKeys(obj, inspect2);
+        if (indent && !singleLineValues(xs)) {
+          return "[" + indentedJoin(xs, indent) + "]";
+        }
+        return "[ " + $join.call(xs, ", ") + " ]";
+      }
+      if (isError(obj)) {
+        var parts = arrObjKeys(obj, inspect2);
+        if (!("cause" in Error.prototype) && "cause" in obj && !isEnumerable.call(obj, "cause")) {
+          return "{ [" + String(obj) + "] " + $join.call($concat.call("[cause]: " + inspect2(obj.cause), parts), ", ") + " }";
+        }
+        if (parts.length === 0) {
+          return "[" + String(obj) + "]";
+        }
+        return "{ [" + String(obj) + "] " + $join.call(parts, ", ") + " }";
+      }
+      if (typeof obj === "object" && customInspect) {
+        if (inspectSymbol && typeof obj[inspectSymbol] === "function" && utilInspect) {
+          return utilInspect(obj, { depth: maxDepth - depth });
+        } else if (customInspect !== "symbol" && typeof obj.inspect === "function") {
+          return obj.inspect();
+        }
+      }
+      if (isMap(obj)) {
+        var mapParts = [];
+        if (mapForEach) {
+          mapForEach.call(obj, function(value, key) {
+            mapParts.push(inspect2(key, obj, true) + " => " + inspect2(value, obj));
+          });
+        }
+        return collectionOf("Map", mapSize.call(obj), mapParts, indent);
+      }
+      if (isSet(obj)) {
+        var setParts = [];
+        if (setForEach) {
+          setForEach.call(obj, function(value) {
+            setParts.push(inspect2(value, obj));
+          });
+        }
+        return collectionOf("Set", setSize.call(obj), setParts, indent);
+      }
+      if (isWeakMap(obj)) {
+        return weakCollectionOf("WeakMap");
+      }
+      if (isWeakSet(obj)) {
+        return weakCollectionOf("WeakSet");
+      }
+      if (isWeakRef(obj)) {
+        return weakCollectionOf("WeakRef");
+      }
+      if (isNumber(obj)) {
+        return markBoxed(inspect2(Number(obj)));
+      }
+      if (isBigInt(obj)) {
+        return markBoxed(inspect2(bigIntValueOf.call(obj)));
+      }
+      if (isBoolean(obj)) {
+        return markBoxed(booleanValueOf.call(obj));
+      }
+      if (isString(obj)) {
+        return markBoxed(inspect2(String(obj)));
+      }
+      if (typeof window !== "undefined" && obj === window) {
+        return "{ [object Window] }";
+      }
+      if (typeof globalThis !== "undefined" && obj === globalThis || typeof global !== "undefined" && obj === global) {
+        return "{ [object globalThis] }";
+      }
+      if (!isDate(obj) && !isRegExp(obj)) {
+        var ys = arrObjKeys(obj, inspect2);
+        var isPlainObject = gPO ? gPO(obj) === Object.prototype : obj instanceof Object || obj.constructor === Object;
+        var protoTag = obj instanceof Object ? "" : "null prototype";
+        var stringTag = !isPlainObject && toStringTag && Object(obj) === obj && toStringTag in obj ? $slice.call(toStr(obj), 8, -1) : protoTag ? "Object" : "";
+        var constructorTag = isPlainObject || typeof obj.constructor !== "function" ? "" : obj.constructor.name ? obj.constructor.name + " " : "";
+        var tag = constructorTag + (stringTag || protoTag ? "[" + $join.call($concat.call([], stringTag || [], protoTag || []), ": ") + "] " : "");
+        if (ys.length === 0) {
+          return tag + "{}";
+        }
+        if (indent) {
+          return tag + "{" + indentedJoin(ys, indent) + "}";
+        }
+        return tag + "{ " + $join.call(ys, ", ") + " }";
+      }
+      return String(obj);
+    };
+    function wrapQuotes(s, defaultStyle, opts) {
+      var style = opts.quoteStyle || defaultStyle;
+      var quoteChar = quotes[style];
+      return quoteChar + s + quoteChar;
+    }
+    function quote(s) {
+      return $replace.call(String(s), /"/g, "&quot;");
+    }
+    function canTrustToString(obj) {
+      return !toStringTag || !(typeof obj === "object" && (toStringTag in obj || typeof obj[toStringTag] !== "undefined"));
+    }
+    function isArray(obj) {
+      return toStr(obj) === "[object Array]" && canTrustToString(obj);
+    }
+    function isDate(obj) {
+      return toStr(obj) === "[object Date]" && canTrustToString(obj);
+    }
+    function isRegExp(obj) {
+      return toStr(obj) === "[object RegExp]" && canTrustToString(obj);
+    }
+    function isError(obj) {
+      return toStr(obj) === "[object Error]" && canTrustToString(obj);
+    }
+    function isString(obj) {
+      return toStr(obj) === "[object String]" && canTrustToString(obj);
+    }
+    function isNumber(obj) {
+      return toStr(obj) === "[object Number]" && canTrustToString(obj);
+    }
+    function isBoolean(obj) {
+      return toStr(obj) === "[object Boolean]" && canTrustToString(obj);
+    }
+    function isSymbol(obj) {
+      if (hasShammedSymbols) {
+        return obj && typeof obj === "object" && obj instanceof Symbol;
+      }
+      if (typeof obj === "symbol") {
+        return true;
+      }
+      if (!obj || typeof obj !== "object" || !symToString) {
+        return false;
+      }
+      try {
+        symToString.call(obj);
+        return true;
+      } catch (e) {
+      }
+      return false;
+    }
+    function isBigInt(obj) {
+      if (!obj || typeof obj !== "object" || !bigIntValueOf) {
+        return false;
+      }
+      try {
+        bigIntValueOf.call(obj);
+        return true;
+      } catch (e) {
+      }
+      return false;
+    }
+    var hasOwn = Object.prototype.hasOwnProperty || function(key) {
+      return key in this;
+    };
+    function has(obj, key) {
+      return hasOwn.call(obj, key);
+    }
+    function toStr(obj) {
+      return objectToString.call(obj);
+    }
+    function nameOf(f) {
+      if (f.name) {
+        return f.name;
+      }
+      var m = $match.call(functionToString.call(f), /^function\s*([\w$]+)/);
+      if (m) {
+        return m[1];
+      }
+      return null;
+    }
+    function indexOf(xs, x) {
+      if (xs.indexOf) {
+        return xs.indexOf(x);
+      }
+      for (var i = 0, l = xs.length; i < l; i++) {
+        if (xs[i] === x) {
+          return i;
+        }
+      }
+      return -1;
+    }
+    function isMap(x) {
+      if (!mapSize || !x || typeof x !== "object") {
+        return false;
+      }
+      try {
+        mapSize.call(x);
+        try {
+          setSize.call(x);
+        } catch (s) {
+          return true;
+        }
+        return x instanceof Map;
+      } catch (e) {
+      }
+      return false;
+    }
+    function isWeakMap(x) {
+      if (!weakMapHas || !x || typeof x !== "object") {
+        return false;
+      }
+      try {
+        weakMapHas.call(x, weakMapHas);
+        try {
+          weakSetHas.call(x, weakSetHas);
+        } catch (s) {
+          return true;
+        }
+        return x instanceof WeakMap;
+      } catch (e) {
+      }
+      return false;
+    }
+    function isWeakRef(x) {
+      if (!weakRefDeref || !x || typeof x !== "object") {
+        return false;
+      }
+      try {
+        weakRefDeref.call(x);
+        return true;
+      } catch (e) {
+      }
+      return false;
+    }
+    function isSet(x) {
+      if (!setSize || !x || typeof x !== "object") {
+        return false;
+      }
+      try {
+        setSize.call(x);
+        try {
+          mapSize.call(x);
+        } catch (m) {
+          return true;
+        }
+        return x instanceof Set;
+      } catch (e) {
+      }
+      return false;
+    }
+    function isWeakSet(x) {
+      if (!weakSetHas || !x || typeof x !== "object") {
+        return false;
+      }
+      try {
+        weakSetHas.call(x, weakSetHas);
+        try {
+          weakMapHas.call(x, weakMapHas);
+        } catch (s) {
+          return true;
+        }
+        return x instanceof WeakSet;
+      } catch (e) {
+      }
+      return false;
+    }
+    function isElement(x) {
+      if (!x || typeof x !== "object") {
+        return false;
+      }
+      if (typeof HTMLElement !== "undefined" && x instanceof HTMLElement) {
+        return true;
+      }
+      return typeof x.nodeName === "string" && typeof x.getAttribute === "function";
+    }
+    function inspectString(str, opts) {
+      if (str.length > opts.maxStringLength) {
+        var remaining = str.length - opts.maxStringLength;
+        var trailer = "... " + remaining + " more character" + (remaining > 1 ? "s" : "");
+        return inspectString($slice.call(str, 0, opts.maxStringLength), opts) + trailer;
+      }
+      var quoteRE = quoteREs[opts.quoteStyle || "single"];
+      quoteRE.lastIndex = 0;
+      var s = $replace.call($replace.call(str, quoteRE, "\\$1"), /[\x00-\x1f]/g, lowbyte);
+      return wrapQuotes(s, "single", opts);
+    }
+    function lowbyte(c) {
+      var n = c.charCodeAt(0);
+      var x = {
+        8: "b",
+        9: "t",
+        10: "n",
+        12: "f",
+        13: "r"
+      }[n];
+      if (x) {
+        return "\\" + x;
+      }
+      return "\\x" + (n < 16 ? "0" : "") + $toUpperCase.call(n.toString(16));
+    }
+    function markBoxed(str) {
+      return "Object(" + str + ")";
+    }
+    function weakCollectionOf(type) {
+      return type + " { ? }";
+    }
+    function collectionOf(type, size, entries, indent) {
+      var joinedEntries = indent ? indentedJoin(entries, indent) : $join.call(entries, ", ");
+      return type + " (" + size + ") {" + joinedEntries + "}";
+    }
+    function singleLineValues(xs) {
+      for (var i = 0; i < xs.length; i++) {
+        if (indexOf(xs[i], "\n") >= 0) {
+          return false;
+        }
+      }
+      return true;
+    }
+    function getIndent(opts, depth) {
+      var baseIndent;
+      if (opts.indent === "	") {
+        baseIndent = "	";
+      } else if (typeof opts.indent === "number" && opts.indent > 0) {
+        baseIndent = $join.call(Array(opts.indent + 1), " ");
+      } else {
+        return null;
+      }
+      return {
+        base: baseIndent,
+        prev: $join.call(Array(depth + 1), baseIndent)
+      };
+    }
+    function indentedJoin(xs, indent) {
+      if (xs.length === 0) {
+        return "";
+      }
+      var lineJoiner = "\n" + indent.prev + indent.base;
+      return lineJoiner + $join.call(xs, "," + lineJoiner) + "\n" + indent.prev;
+    }
+    function arrObjKeys(obj, inspect2) {
+      var isArr = isArray(obj);
+      var xs = [];
+      if (isArr) {
+        xs.length = obj.length;
+        for (var i = 0; i < obj.length; i++) {
+          xs[i] = has(obj, i) ? inspect2(obj[i], obj) : "";
+        }
+      }
+      var syms = typeof gOPS === "function" ? gOPS(obj) : [];
+      var symMap;
+      if (hasShammedSymbols) {
+        symMap = {};
+        for (var k = 0; k < syms.length; k++) {
+          symMap["$" + syms[k]] = syms[k];
+        }
+      }
+      for (var key in obj) {
+        if (!has(obj, key)) {
+          continue;
+        }
+        if (isArr && String(Number(key)) === key && key < obj.length) {
+          continue;
+        }
+        if (hasShammedSymbols && symMap["$" + key] instanceof Symbol) {
+          continue;
+        } else if ($test.call(/[^\w$]/, key)) {
+          xs.push(inspect2(key, obj) + ": " + inspect2(obj[key], obj));
+        } else {
+          xs.push(key + ": " + inspect2(obj[key], obj));
+        }
+      }
+      if (typeof gOPS === "function") {
+        for (var j = 0; j < syms.length; j++) {
+          if (isEnumerable.call(obj, syms[j])) {
+            xs.push("[" + inspect2(syms[j]) + "]: " + inspect2(obj[syms[j]], obj));
+          }
+        }
+      }
+      return xs;
+    }
+  }
+});
+
+// node_modules/@midnight-ntwrk/compact-runtime/dist/error.js
+var import_object_inspect = __toESM(require_object_inspect(), 1);
+var CompactError = class extends Error {
+  constructor(msg) {
+    super(msg);
+    this.name = "CompactError";
+  }
+};
+function assert(b, s) {
+  if (!b) {
+    const msg = `failed assert: ${s}`;
+    throw new CompactError(msg);
+  }
+}
+function typeError(who, what, where, type, x) {
+  const msg = `type error: ${who} ${what} at ${where}; expected value of type ${type} but received ${(0, import_object_inspect.default)(x)}`;
+  throw new CompactError(msg);
+}
+
+// node_modules/@midnight-ntwrk/compact-runtime/dist/constants.js
+import * as ocrt from "@midnight-ntwrk/onchain-runtime-v3";
+var MAX_FIELD = ocrt.maxField();
+var DUMMY_ADDRESS = ocrt.dummyContractAddress();
+
+// node_modules/@midnight-ntwrk/compact-runtime/dist/version.js
+var versionString = "0.16.0";
+var checkRuntimeVersion = (expectedRuntimeVersionString) => {
+  const expectedRuntimeVersion = expectedRuntimeVersionString.split("-")[0].split(".").map(Number);
+  const actualRuntimeVersion = versionString.split("-")[0].split(".").map(Number);
+  if (expectedRuntimeVersion[0] !== actualRuntimeVersion[0] || actualRuntimeVersion[0] === 0 && expectedRuntimeVersion[1] !== actualRuntimeVersion[1] || expectedRuntimeVersion[1] > actualRuntimeVersion[1] || expectedRuntimeVersion[1] === actualRuntimeVersion[1] && expectedRuntimeVersion[2] > actualRuntimeVersion[2]) {
+    throw new CompactError(`Version mismatch: compiled code expects ${expectedRuntimeVersionString}, runtime is ${versionString}`);
+  }
+  const MAX_FIELD2 = 52435875175126190479447740508185965837690552500527637822603658699938581184512n;
+  if (MAX_FIELD2 !== MAX_FIELD) {
+    throw new CompactError(`Maximum field mismatch: compiled code uses ${MAX_FIELD2}, runtime uses ${MAX_FIELD}`);
+  }
+};
+
+// node_modules/@midnight-ntwrk/compact-runtime/dist/compact-types.js
+import * as ocrt2 from "@midnight-ntwrk/onchain-runtime-v3";
+var CompactTypeJubjubPoint = {
+  alignment() {
+    return [
+      { tag: "atom", value: { tag: "field" } },
+      { tag: "atom", value: { tag: "field" } }
+    ];
+  },
+  fromValue(value) {
+    const x = value.shift();
+    const y = value.shift();
+    if (x == void 0 || y == void 0) {
+      throw new CompactError("expected JubjubPoint");
+    } else {
+      return {
+        x: ocrt2.valueToBigInt([x]),
+        y: ocrt2.valueToBigInt([y])
+      };
+    }
+  },
+  toValue(value) {
+    return ocrt2.bigIntToValue(value.x).concat(ocrt2.bigIntToValue(value.y));
+  }
+};
+var CompactTypeMerkleTreeDigest = {
+  alignment() {
+    return [{ tag: "atom", value: { tag: "field" } }];
+  },
+  fromValue(value) {
+    const val = value.shift();
+    if (val == void 0) {
+      throw new CompactError("expected MerkleTreeDigest");
+    } else {
+      return { field: ocrt2.valueToBigInt([val]) };
+    }
+  },
+  toValue(value) {
+    return ocrt2.bigIntToValue(value.field);
+  }
+};
+var CompactTypeMerkleTreePathEntry = {
+  alignment() {
+    return CompactTypeMerkleTreeDigest.alignment().concat(CompactTypeBoolean.alignment());
+  },
+  fromValue(value) {
+    const sibling = CompactTypeMerkleTreeDigest.fromValue(value);
+    const goes_left = CompactTypeBoolean.fromValue(value);
+    return {
+      sibling,
+      goes_left
+    };
+  },
+  toValue(value) {
+    return CompactTypeMerkleTreeDigest.toValue(value.sibling).concat(CompactTypeBoolean.toValue(value.goes_left));
+  }
+};
+var CompactTypeMerkleTreePath = class {
+  leaf;
+  path;
+  constructor(n, leaf) {
+    this.leaf = leaf;
+    this.path = new CompactTypeVector(n, CompactTypeMerkleTreePathEntry);
+  }
+  alignment() {
+    return this.leaf.alignment().concat(this.path.alignment());
+  }
+  fromValue(value) {
+    const leaf = this.leaf.fromValue(value);
+    const path = this.path.fromValue(value);
+    return {
+      leaf,
+      path
+    };
+  }
+  toValue(value) {
+    return this.leaf.toValue(value.leaf).concat(this.path.toValue(value.path));
+  }
+};
+var CompactTypeField = {
+  alignment() {
+    return [{ tag: "atom", value: { tag: "field" } }];
+  },
+  fromValue(value) {
+    const val = value.shift();
+    if (val == void 0) {
+      throw new CompactError("expected Field");
+    } else {
+      return ocrt2.valueToBigInt([val]);
+    }
+  },
+  toValue(value) {
+    return ocrt2.bigIntToValue(value);
+  }
+};
+var CompactTypeEnum = class {
+  maxValue;
+  length;
+  constructor(maxValue, length) {
+    this.maxValue = maxValue;
+    this.length = length;
+  }
+  alignment() {
+    return [{ tag: "atom", value: { tag: "bytes", length: this.length } }];
+  }
+  fromValue(value) {
+    const val = value.shift();
+    if (val == void 0) {
+      throw new CompactError(`expected Enum[<=${this.maxValue}]`);
+    } else {
+      let res = 0;
+      for (let i = 0; i < val.length; i++) {
+        res += (1 << 8 * i) * val[i];
+      }
+      if (res > this.maxValue) {
+        throw new CompactError(`expected UnsignedInteger[<=${this.maxValue}]`);
+      }
+      return res;
+    }
+  }
+  toValue(value) {
+    return CompactTypeField.toValue(BigInt(value));
+  }
+};
+var CompactTypeUnsignedInteger = class {
+  maxValue;
+  length;
+  constructor(maxValue, length) {
+    this.maxValue = maxValue;
+    this.length = length;
+  }
+  alignment() {
+    return [{ tag: "atom", value: { tag: "bytes", length: this.length } }];
+  }
+  fromValue(value) {
+    const val = value.shift();
+    if (val == void 0) {
+      throw new CompactError(`expected UnsignedInteger[<=${this.maxValue}]`);
+    } else {
+      let res = 0n;
+      for (let i = 0; i < val.length; i++) {
+        res += (1n << 8n * BigInt(i)) * BigInt(val[i]);
+      }
+      if (res > this.maxValue) {
+        throw new CompactError(`expected UnsignedInteger[<=${this.maxValue}]`);
+      }
+      return res;
+    }
+  }
+  toValue(value) {
+    return CompactTypeField.toValue(value);
+  }
+};
+var CompactTypeVector = class {
+  length;
+  type;
+  constructor(length, type) {
+    this.length = length;
+    this.type = type;
+  }
+  alignment() {
+    const inner = this.type.alignment();
+    let res = [];
+    for (let i = 0; i < this.length; i++) {
+      res = res.concat(inner);
+    }
+    return res;
+  }
+  fromValue(value) {
+    const res = [];
+    for (let i = 0; i < this.length; i++) {
+      res.push(this.type.fromValue(value));
+    }
+    return res;
+  }
+  toValue(value) {
+    if (value.length != this.length) {
+      throw new CompactError(`expected ${this.length}-element array`);
+    }
+    let res = [];
+    for (let i = 0; i < this.length; i++) {
+      res = res.concat(this.type.toValue(value[i]));
+    }
+    return res;
+  }
+};
+var CompactTypeBoolean = {
+  alignment() {
+    return [{ tag: "atom", value: { tag: "bytes", length: 1 } }];
+  },
+  fromValue(value) {
+    const val = value.shift();
+    if (val == void 0 || val.length > 1 || val.length == 1 && val[0] != 1) {
+      throw new CompactError("expected Boolean");
+    }
+    return val.length == 1;
+  },
+  toValue(value) {
+    if (value) {
+      return [new Uint8Array([1])];
+    } else {
+      return [new Uint8Array(0)];
+    }
+  }
+};
+var CompactTypeBytes = class {
+  length;
+  constructor(length) {
+    this.length = length;
+  }
+  alignment() {
+    return [{ tag: "atom", value: { tag: "bytes", length: this.length } }];
+  }
+  fromValue(value) {
+    const val = value.shift();
+    if (val == void 0 || val.length > this.length) {
+      throw new CompactError(`expected Bytes[${this.length}]`);
+    }
+    if (val.length == this.length) {
+      return val;
+    }
+    const res = new Uint8Array(this.length);
+    res.set(val, 0);
+    return res;
+  }
+  toValue(value) {
+    let end = value.length;
+    while (end > 0 && value[end - 1] == 0) {
+      end -= 1;
+    }
+    return [value.slice(0, end)];
+  }
+};
+var CompactTypeOpaqueUint8Array = {
+  alignment() {
+    return [{ tag: "atom", value: { tag: "compress" } }];
+  },
+  fromValue(value) {
+    return value.shift();
+  },
+  toValue(value) {
+    return [value];
+  }
+};
+var CompactTypeOpaqueString = {
+  alignment() {
+    return [{ tag: "atom", value: { tag: "compress" } }];
+  },
+  fromValue(value) {
+    return new TextDecoder("utf-8").decode(value.shift());
+  },
+  toValue(value) {
+    return [new TextEncoder().encode(value)];
+  }
+};
+var Bytes32Descriptor = new CompactTypeBytes(32);
+var MaxUint8Descriptor = new CompactTypeUnsignedInteger(18446744073709551615n, 8);
+var ShieldedCoinInfoDescriptor = {
+  alignment() {
+    return Bytes32Descriptor.alignment().concat(Bytes32Descriptor.alignment().concat(MaxUint8Descriptor.alignment()));
+  },
+  fromValue(value) {
+    return {
+      nonce: Bytes32Descriptor.fromValue(value),
+      color: Bytes32Descriptor.fromValue(value),
+      value: MaxUint8Descriptor.fromValue(value)
+    };
+  },
+  toValue(value) {
+    return Bytes32Descriptor.toValue(value.nonce).concat(Bytes32Descriptor.toValue(value.color).concat(MaxUint8Descriptor.toValue(value.value)));
+  }
+};
+var ZswapCoinPublicKeyDescriptor = {
+  alignment() {
+    return Bytes32Descriptor.alignment();
+  },
+  fromValue(value) {
+    return {
+      bytes: Bytes32Descriptor.fromValue(value)
+    };
+  },
+  toValue(value) {
+    return Bytes32Descriptor.toValue(value.bytes);
+  }
+};
+var ContractAddressDescriptor = {
+  alignment() {
+    return Bytes32Descriptor.alignment();
+  },
+  fromValue(value) {
+    return {
+      bytes: Bytes32Descriptor.fromValue(value)
+    };
+  },
+  toValue(value) {
+    return Bytes32Descriptor.toValue(value.bytes);
+  }
+};
+var ShieldedCoinRecipientDescriptor = {
+  alignment() {
+    return CompactTypeBoolean.alignment().concat(ZswapCoinPublicKeyDescriptor.alignment().concat(ContractAddressDescriptor.alignment()));
+  },
+  fromValue(value) {
+    return {
+      is_left: CompactTypeBoolean.fromValue(value),
+      left: ZswapCoinPublicKeyDescriptor.fromValue(value),
+      right: ContractAddressDescriptor.fromValue(value)
+    };
+  },
+  toValue(value) {
+    return CompactTypeBoolean.toValue(value.is_left).concat(ZswapCoinPublicKeyDescriptor.toValue(value.left).concat(ContractAddressDescriptor.toValue(value.right)));
+  }
+};
+
+// node_modules/@midnight-ntwrk/compact-runtime/dist/built-ins.js
+import * as ocrt3 from "@midnight-ntwrk/onchain-runtime-v3";
+var FIELD_MODULUS = MAX_FIELD + 1n;
+function addField(x, y) {
+  const t = x + y;
+  return t < FIELD_MODULUS ? t : t - FIELD_MODULUS;
+}
+function subField(x, y) {
+  const t = x - y;
+  return t >= 0 ? t : t + FIELD_MODULUS;
+}
+function mulField(x, y) {
+  return x * y % FIELD_MODULUS;
+}
+function transientHash2(rtType, value) {
+  return ocrt3.valueToBigInt(ocrt3.transientHash(rtType.alignment(), rtType.toValue(value)));
+}
+function transientCommit2(rtType, value, opening) {
+  return ocrt3.valueToBigInt(ocrt3.transientCommit(rtType.alignment(), rtType.toValue(value), ocrt3.bigIntToValue(opening)));
+}
+function persistentHash2(rtType, value) {
+  const wrapped = ocrt3.persistentHash(rtType.alignment(), rtType.toValue(value))[0];
+  const res = new Uint8Array(32);
+  res.set(wrapped, 0);
+  return res;
+}
+function persistentCommit2(rtType, value, opening) {
+  if (opening.length != 32) {
+    throw new CompactError("Expected 32-byte string");
+  }
+  const wrapped = ocrt3.persistentCommit(rtType.alignment(), rtType.toValue(value), [opening])[0];
+  const res = new Uint8Array(32);
+  res.set(wrapped, 0);
+  return res;
+}
+function degradeToTransient2(x) {
+  if (x.length != 32) {
+    throw new CompactError("Expected 32-byte string");
+  }
+  return ocrt3.valueToBigInt(ocrt3.degradeToTransient([x]));
+}
+function upgradeFromTransient2(x) {
+  const wrapped = ocrt3.upgradeFromTransient(ocrt3.bigIntToValue(x))[0];
+  const res = new Uint8Array(32);
+  res.set(wrapped, 0);
+  return res;
+}
+function jubjubPointX(pt) {
+  return pt.x;
+}
+function jubjubPointY(pt) {
+  return pt.y;
+}
+function constructJubjubPoint(x, y) {
+  return { x, y };
+}
+function hashToCurve2(rtType, x) {
+  return CompactTypeJubjubPoint.fromValue(ocrt3.hashToCurve(rtType.alignment(), rtType.toValue(x)));
+}
+function ecAdd2(a, b) {
+  return CompactTypeJubjubPoint.fromValue(ocrt3.ecAdd(CompactTypeJubjubPoint.toValue(a), CompactTypeJubjubPoint.toValue(b)));
+}
+function ecMul2(a, b) {
+  return CompactTypeJubjubPoint.fromValue(ocrt3.ecMul(CompactTypeJubjubPoint.toValue(a), ocrt3.bigIntToValue(b)));
+}
+function ecMulGenerator2(b) {
+  return CompactTypeJubjubPoint.fromValue(ocrt3.ecMulGenerator(ocrt3.bigIntToValue(b)));
+}
+function alignedConcat(...values) {
+  const res = { value: [], alignment: [] };
+  for (const value of values) {
+    res.value = res.value.concat(value.value);
+    res.alignment = res.alignment.concat(value.alignment);
+  }
+  return res;
+}
+
+// node_modules/@midnight-ntwrk/compact-runtime/dist/casts.js
+function convertFieldToBytes(n, x, src) {
+  const x_0 = x;
+  const a = new Uint8Array(n);
+  for (let i = 0; i < n; i++) {
+    a[i] = Number(x & 0xffn);
+    x = x / 0x100n;
+    if (x == 0n)
+      return a;
+  }
+  const msg = `range error at ${src}: Field or Uint value ${x_0} does not fit into ${n} bytes`;
+  throw new CompactError(msg);
+}
+function convertBytesToField(n, a, src) {
+  let x = 0n;
+  for (let i = n - 1; i >= 0; i -= 1) {
+    x = x * 0x100n + BigInt(a[i]);
+    if (x > MAX_FIELD) {
+      const msg = `range error at ${src}: byte vector [${Array.from(a.slice(0, n)).join(",")}] exceeds maximum value ${MAX_FIELD} of Field type`;
+      throw new CompactError(msg);
+    }
+  }
+  return x;
+}
+function convertBytesToUint(maxval, n, a, src) {
+  let x = 0n;
+  for (let i = n - 1; i >= 0; i -= 1) {
+    x = x * 0x100n + BigInt(a[i]);
+    if (x > maxval) {
+      const msg = `range error at ${src}: byte vector [${Array.from(a.slice(0, n)).join(",")}] exceeds maximum value ${maxval} of target Uint type`;
+      throw new CompactError(msg);
+    }
+  }
+  return x;
+}
+
+// node_modules/@midnight-ntwrk/compact-runtime/dist/zswap.js
+import * as ocrt4 from "@midnight-ntwrk/onchain-runtime-v3";
+
+// node_modules/@midnight-ntwrk/compact-runtime/dist/utils.js
+var HEX_REGEX_NO_PREFIX = /^([0-9A-Fa-f]{2})*$/;
+var CONTRACT_ADDRESS_BYTE_LENGTH = 32;
+function isContractAddress(x) {
+  return typeof x === "string" && x.length === CONTRACT_ADDRESS_BYTE_LENGTH * 2 && HEX_REGEX_NO_PREFIX.test(x);
+}
+function isEncodedContractAddress(x) {
+  return typeof x === "object" && x !== null && x !== void 0 && "bytes" in x && x.bytes instanceof Uint8Array && x.bytes.length == CONTRACT_ADDRESS_BYTE_LENGTH;
+}
+var fromHex = (s) => Buffer.from(s, "hex");
+var toHex = (s) => Buffer.from(s).toString("hex");
+
+// node_modules/@midnight-ntwrk/compact-runtime/dist/zswap.js
+var emptyZswapLocalState = (coinPublicKey) => ({
+  coinPublicKey: typeof coinPublicKey === "string" ? { bytes: ocrt4.encodeCoinPublicKey(coinPublicKey) } : coinPublicKey,
+  currentIndex: 0n,
+  inputs: [],
+  outputs: []
+});
+var encodeRecipient = ({ is_left, left, right }) => ({
+  is_left,
+  left: { bytes: ocrt4.encodeCoinPublicKey(left) },
+  right: { bytes: ocrt4.encodeContractAddress(right) }
+});
+var decodeRecipient = ({ is_left, left, right }) => ({
+  is_left,
+  left: ocrt4.decodeCoinPublicKey(left.bytes),
+  right: ocrt4.decodeContractAddress(right.bytes)
+});
+var encodeZswapLocalState = (state) => ({
+  coinPublicKey: { bytes: ocrt4.encodeCoinPublicKey(state.coinPublicKey) },
+  currentIndex: state.currentIndex,
+  inputs: state.inputs.map(ocrt4.encodeQualifiedShieldedCoinInfo),
+  outputs: state.outputs.map(({ coinInfo, recipient }) => ({
+    coinInfo: ocrt4.encodeShieldedCoinInfo(coinInfo),
+    recipient: encodeRecipient(recipient)
+  }))
+});
+var decodeZswapLocalState = (state) => ({
+  coinPublicKey: ocrt4.decodeCoinPublicKey(state.coinPublicKey.bytes),
+  currentIndex: state.currentIndex,
+  inputs: state.inputs.map(ocrt4.decodeQualifiedShieldedCoinInfo),
+  outputs: state.outputs.map(({ coinInfo, recipient }) => ({
+    coinInfo: ocrt4.decodeShieldedCoinInfo(coinInfo),
+    recipient: decodeRecipient(recipient)
+  }))
+});
+function createZswapInput(circuitContext, qualifiedShieldedCoinInfo) {
+  circuitContext.currentZswapLocalState = {
+    ...circuitContext.currentZswapLocalState,
+    inputs: circuitContext.currentZswapLocalState.inputs.concat(qualifiedShieldedCoinInfo)
+  };
+  return [];
+}
+function createCoinCommitment(coinInfo, recipient) {
+  return ocrt4.runtimeCoinCommitment({
+    value: ShieldedCoinInfoDescriptor.toValue(coinInfo),
+    alignment: ShieldedCoinInfoDescriptor.alignment()
+  }, {
+    value: ShieldedCoinRecipientDescriptor.toValue(recipient),
+    alignment: ShieldedCoinRecipientDescriptor.alignment()
+  });
+}
+function createZswapOutput(circuitContext, coinInfo, recipient) {
+  circuitContext.currentQueryContext = circuitContext.currentQueryContext.insertCommitment(Buffer.from(Bytes32Descriptor.fromValue(createCoinCommitment(coinInfo, recipient).value)).toString("hex"), circuitContext.currentZswapLocalState.currentIndex);
+  circuitContext.currentZswapLocalState = {
+    ...circuitContext.currentZswapLocalState,
+    currentIndex: circuitContext.currentZswapLocalState.currentIndex + 1n,
+    outputs: circuitContext.currentZswapLocalState.outputs.concat({
+      coinInfo,
+      recipient
+    })
+  };
+  return [];
+}
+function ownPublicKey(circuitContext) {
+  return circuitContext.currentZswapLocalState.coinPublicKey;
+}
+var hasCoinCommitment = (context, coinInfo, recipient) => context.currentQueryContext.comIndices.has(toHex(Bytes32Descriptor.fromValue(createCoinCommitment(coinInfo, recipient).value)));
+
+// node_modules/@midnight-ntwrk/compact-runtime/dist/constructor-context.js
+var createConstructorContext = (initialPrivateState, coinPublicKey) => ({
+  initialPrivateState,
+  initialZswapLocalState: emptyZswapLocalState(coinPublicKey)
+});
+
+// node_modules/@midnight-ntwrk/compact-runtime/dist/circuit-context.js
+import * as ocrt5 from "@midnight-ntwrk/onchain-runtime-v3";
+var coerceToChargedState = (contractState) => {
+  let state;
+  if (contractState instanceof ocrt5.ChargedState) {
+    state = contractState;
+  } else if (contractState instanceof ocrt5.ContractState) {
+    state = contractState.data;
+  } else if (contractState instanceof ocrt5.StateValue) {
+    state = new ocrt5.ChargedState(contractState);
+  } else {
+    throw new CompactError(`'contractState' parameter ${contractState} has unexpected type`);
+  }
+  return state;
+};
+var createInitialQueryContext = (contractState, contractAddress, time) => {
+  const initialQueryContext = new ocrt5.QueryContext(coerceToChargedState(contractState), contractAddress);
+  const balance = contractState instanceof ocrt5.ContractState ? contractState.balance : /* @__PURE__ */ new Map();
+  initialQueryContext.block = {
+    ...initialQueryContext.block,
+    balance,
+    ownAddress: contractAddress,
+    secondsSinceEpoch: BigInt(time ?? Math.floor(Date.now() / 1e3))
+  };
+  return initialQueryContext;
+};
+var isZswapLocalState = (value) => {
+  return typeof value === "object" && value !== null && "coinPublicKey" in value && typeof value.coinPublicKey === "string" && "currentIndex" in value && "inputs" in value && "outputs" in value;
+};
+var isEncodedZswapLocalState = (value) => {
+  return typeof value === "object" && value !== null && "coinPublicKey" in value && typeof value.coinPublicKey === "object" && value.coinPublicKey !== null && "bytes" in value.coinPublicKey && "currentIndex" in value && "inputs" in value && "outputs" in value;
+};
+var createCircuitContext = (contractAddress, coinPublicKeyOrZswapState, contractState, privateState, gasLimit, costModel, time) => {
+  const initialQueryContext = createInitialQueryContext(contractState, contractAddress, time);
+  let zswapLocalState;
+  if (isZswapLocalState(coinPublicKeyOrZswapState)) {
+    zswapLocalState = encodeZswapLocalState(coinPublicKeyOrZswapState);
+  } else if (isEncodedZswapLocalState(coinPublicKeyOrZswapState)) {
+    zswapLocalState = coinPublicKeyOrZswapState;
+  } else {
+    zswapLocalState = emptyZswapLocalState(coinPublicKeyOrZswapState);
+  }
+  return {
+    currentPrivateState: privateState,
+    currentZswapLocalState: zswapLocalState,
+    currentQueryContext: initialQueryContext,
+    costModel: costModel ?? ocrt5.CostModel.initialCostModel(),
+    gasLimit
+  };
+};
+var emptyRunningCost = () => ({
+  readTime: 0n,
+  computeTime: 0n,
+  bytesWritten: 0n,
+  bytesDeleted: 0n
+});
+var queryLedgerState = (circuitContext, partialProofData, program) => {
+  try {
+    const res = circuitContext.currentQueryContext.query(program, circuitContext.costModel, circuitContext.gasLimit);
+    circuitContext.currentQueryContext = res.context;
+    circuitContext["gasCost"] = res.gasCost;
+    const reads = res.events.filter((e) => e.tag === "read");
+    let i = 0;
+    partialProofData.publicTranscript = partialProofData.publicTranscript.concat(program.map((op) => typeof op === "object" && "popeq" in op ? {
+      popeq: {
+        ...op.popeq,
+        result: reads[i++].content
+      }
+    } : op));
+    if (res.events.length === 1) {
+      const event = res.events[0];
+      if (event.tag === "read") {
+        return event.content;
+      }
+    }
+    return res.events;
+  } catch (err) {
+    if (err instanceof Error) {
+      throw new CompactError(err.toString());
+    }
+    throw err;
+  }
+};
+
+// node_modules/@midnight-ntwrk/compact-runtime/dist/witness.js
+function createWitnessContext(ledger, privateState, contractAddress) {
+  return {
+    ledger,
+    privateState,
+    contractAddress
+  };
+}
+
+// node_modules/@midnight-ntwrk/compact-runtime/dist/contract-dependencies.js
+import * as ocrt6 from "@midnight-ntwrk/onchain-runtime-v3";
+function isCompactVector(x) {
+  return Array.isArray(x) && x.every((element) => isCompactValue(element));
+}
+function isCompactStruct(x) {
+  return typeof x === "object" && x !== null && x !== void 0 && Object.entries(x).every(([key, value]) => typeof key === "string" && isCompactValue(value));
+}
+function isCompactValue(x) {
+  return isEncodedContractAddress(x) || isCompactVector(x) || isCompactStruct(x);
+}
+var expectedValueError = (expected, actual) => {
+  throw new CompactError(`Expected ${expected} but received ${JSON.stringify(actual)}`);
+};
+function assertIsContractAddress(value) {
+  if (!isEncodedContractAddress(value)) {
+    expectedValueError("contract address", value);
+  }
+}
+function assertIsCompactVector(value) {
+  if (!isCompactVector(value)) {
+    expectedValueError("vector", value);
+  }
+}
+function assertIsCompactStruct(value) {
+  if (!isCompactStruct(value)) {
+    expectedValueError("struct", value);
+  }
+}
+function assertIsCompactValue(x) {
+  if (!isCompactValue(x)) {
+    expectedValueError("Compact value", x);
+  }
+}
+function toCompactValue(x) {
+  assertIsCompactValue(x);
+  return x;
+}
+var compactValueDependencies = (sparseCompactType, compactValue, dependencies) => {
+  if (sparseCompactType.tag == "contractAddress") {
+    assertIsContractAddress(compactValue);
+    dependencies.add(ocrt6.decodeContractAddress(compactValue.bytes));
+  } else if (sparseCompactType.tag == "struct") {
+    assertIsCompactStruct(compactValue);
+    Object.keys(compactValue).forEach((structElementId) => compactValueDependencies(sparseCompactType.elements[structElementId], compactValue[structElementId], dependencies));
+  } else {
+    assertIsCompactVector(compactValue);
+    compactValue.forEach((vectorElement) => compactValueDependencies(sparseCompactType.sparseType, vectorElement, dependencies));
+  }
+};
+var alignedValueToCompactValue = (descriptor, { value }) => toCompactValue(descriptor.fromValue(value));
+var stateValueToCompactValue = (descriptor, stateValue) => alignedValueToCompactValue(descriptor, stateValue.asCell());
+var compactCellDependencies = (sparseCompactCellADT, state, dependencies) => {
+  const { sparseType, descriptor } = sparseCompactCellADT.valueType;
+  compactValueDependencies(sparseType, stateValueToCompactValue(descriptor, state), dependencies);
+};
+var compactArrayLikeADTDependencies = (sparseCompactArrayLikeADT, states, dependencies) => {
+  const { sparseType, descriptor } = sparseCompactArrayLikeADT.valueType;
+  states.forEach((state) => compactValueDependencies(sparseType, stateValueToCompactValue(descriptor, state), dependencies));
+};
+var compactMapADTDependencies = (sparseCompactMapADT, stateMap, dependencies) => {
+  const { keyType, valueType } = sparseCompactMapADT;
+  stateMap.keys().forEach((key) => {
+    if (keyType) {
+      compactValueDependencies(keyType.sparseType, alignedValueToCompactValue(keyType.descriptor, key), dependencies);
+    }
+    if (valueType) {
+      const value = stateMap.get(key);
+      if (!value) {
+        throw new CompactError(`State map ${stateMap.toString(false)} contains key without corresponding value`);
+      }
+      if (valueType.tag == "compactValue") {
+        compactValueDependencies(valueType.sparseType, stateValueToCompactValue(valueType.descriptor, value), dependencies);
+      } else {
+        compactADTDependencies(valueType, value, dependencies);
+      }
+    }
+  });
+};
+function assertCastSucceeded(s, stateValue, expectedCastOutput) {
+  if (!s) {
+    throw new CompactError(`State ${stateValue.toString(false)} cannot be cast to a ${expectedCastOutput}`);
+  }
+}
+var compactADTDependencies = (sparseCompactADT, stateValue, dependencies) => {
+  if (sparseCompactADT.tag == "cell") {
+    compactCellDependencies(sparseCompactADT, stateValue, dependencies);
+  } else if (sparseCompactADT.tag == "map") {
+    const stateMap = stateValue.asMap();
+    assertCastSucceeded(stateMap, stateValue, "map");
+    compactMapADTDependencies(sparseCompactADT, stateMap, dependencies);
+  } else if (sparseCompactADT.tag == "list" || sparseCompactADT.tag == "set") {
+    const states = stateValue.asArray();
+    assertCastSucceeded(states, stateValue, "array");
+    compactArrayLikeADTDependencies(sparseCompactADT, states, dependencies);
+  }
+};
+var castToStateArray = (state) => {
+  const ledgerState = state.asArray();
+  assertCastSucceeded(ledgerState, state, "array");
+  return ledgerState;
+};
+var publicLedgerSegmentsDependencies = (publicLedgerSegments, state, dependencies) => {
+  const ledgerState = castToStateArray(state);
+  Object.keys(publicLedgerSegments.indices).map(parseInt).forEach((idx) => {
+    const referenceLocations = publicLedgerSegments.indices[idx];
+    if ("tag" in referenceLocations && referenceLocations["tag"] === "publicLedgerArray") {
+      publicLedgerSegmentsDependencies(referenceLocations, ledgerState[idx], dependencies);
+    } else {
+      compactADTDependencies(referenceLocations, ledgerState[idx], dependencies);
+    }
+  });
+};
+var contractDependencies = (contractReferenceLocations, state) => {
+  const dependencies = /* @__PURE__ */ new Set();
+  if (contractReferenceLocations.indices) {
+    publicLedgerSegmentsDependencies(contractReferenceLocations, state, dependencies);
+  }
+  return [...dependencies];
+};
+
+// node_modules/@midnight-ntwrk/compact-runtime/dist/index.js
+import { communicationCommitmentRandomness, communicationCommitment, entryPointHash, sampleSigningKey, signingKeyFromBip340, signData, signatureVerifyingKey, verifySignature, encodeRawTokenType, decodeRawTokenType, encodeContractAddress as encodeContractAddress2, decodeContractAddress as decodeContractAddress3, encodeUserAddress, decodeUserAddress, encodeCoinPublicKey as encodeCoinPublicKey2, decodeCoinPublicKey as decodeCoinPublicKey2, encodeShieldedCoinInfo as encodeShieldedCoinInfo2, encodeQualifiedShieldedCoinInfo as encodeQualifiedShieldedCoinInfo2, decodeShieldedCoinInfo as decodeShieldedCoinInfo2, decodeQualifiedShieldedCoinInfo as decodeQualifiedShieldedCoinInfo2, rawTokenType, sampleContractAddress, sampleUserAddress, sampleRawTokenType, dummyContractAddress as dummyContractAddress2, dummyUserAddress, runtimeCoinCommitment as runtimeCoinCommitment2, leafHash, maxAlignedSize, maxField as maxField2, proofDataIntoSerializedPreimage, bigIntModFr, valueToBigInt as valueToBigInt3, bigIntToValue as bigIntToValue3, runProgram, ContractOperation, ContractMaintenanceAuthority, ContractState as ContractState2, QueryContext as QueryContext2, CostModel as CostModel2, QueryResults, StateBoundedMerkleTree, StateMap, ChargedState as ChargedState2, StateValue as StateValue2, VmResults, VmStack } from "@midnight-ntwrk/onchain-runtime-v3";
+
+export {
+  CompactError,
+  assert,
+  typeError,
+  MAX_FIELD,
+  DUMMY_ADDRESS,
+  versionString,
+  checkRuntimeVersion,
+  CompactTypeJubjubPoint,
+  CompactTypeMerkleTreeDigest,
+  CompactTypeMerkleTreePathEntry,
+  CompactTypeMerkleTreePath,
+  CompactTypeField,
+  CompactTypeEnum,
+  CompactTypeUnsignedInteger,
+  CompactTypeVector,
+  CompactTypeBoolean,
+  CompactTypeBytes,
+  CompactTypeOpaqueUint8Array,
+  CompactTypeOpaqueString,
+  Bytes32Descriptor,
+  MaxUint8Descriptor,
+  ShieldedCoinInfoDescriptor,
+  ZswapCoinPublicKeyDescriptor,
+  ContractAddressDescriptor,
+  ShieldedCoinRecipientDescriptor,
+  addField,
+  subField,
+  mulField,
+  transientHash2 as transientHash,
+  transientCommit2 as transientCommit,
+  persistentHash2 as persistentHash,
+  persistentCommit2 as persistentCommit,
+  degradeToTransient2 as degradeToTransient,
+  upgradeFromTransient2 as upgradeFromTransient,
+  jubjubPointX,
+  jubjubPointY,
+  constructJubjubPoint,
+  hashToCurve2 as hashToCurve,
+  ecAdd2 as ecAdd,
+  ecMul2 as ecMul,
+  ecMulGenerator2 as ecMulGenerator,
+  alignedConcat,
+  convertFieldToBytes,
+  convertBytesToField,
+  convertBytesToUint,
+  HEX_REGEX_NO_PREFIX,
+  CONTRACT_ADDRESS_BYTE_LENGTH,
+  isContractAddress,
+  isEncodedContractAddress,
+  fromHex,
+  toHex,
+  emptyZswapLocalState,
+  encodeRecipient,
+  decodeRecipient,
+  encodeZswapLocalState,
+  decodeZswapLocalState,
+  createZswapInput,
+  createZswapOutput,
+  ownPublicKey,
+  hasCoinCommitment,
+  createConstructorContext,
+  createCircuitContext,
+  emptyRunningCost,
+  queryLedgerState,
+  createWitnessContext,
+  contractDependencies,
+  communicationCommitmentRandomness,
+  communicationCommitment,
+  entryPointHash,
+  sampleSigningKey,
+  signingKeyFromBip340,
+  signData,
+  signatureVerifyingKey,
+  verifySignature,
+  encodeRawTokenType,
+  decodeRawTokenType,
+  encodeContractAddress2 as encodeContractAddress,
+  decodeContractAddress3 as decodeContractAddress,
+  encodeUserAddress,
+  decodeUserAddress,
+  encodeCoinPublicKey2 as encodeCoinPublicKey,
+  decodeCoinPublicKey2 as decodeCoinPublicKey,
+  encodeShieldedCoinInfo2 as encodeShieldedCoinInfo,
+  encodeQualifiedShieldedCoinInfo2 as encodeQualifiedShieldedCoinInfo,
+  decodeShieldedCoinInfo2 as decodeShieldedCoinInfo,
+  decodeQualifiedShieldedCoinInfo2 as decodeQualifiedShieldedCoinInfo,
+  rawTokenType,
+  sampleContractAddress,
+  sampleUserAddress,
+  sampleRawTokenType,
+  dummyContractAddress2 as dummyContractAddress,
+  dummyUserAddress,
+  runtimeCoinCommitment2 as runtimeCoinCommitment,
+  leafHash,
+  maxAlignedSize,
+  maxField2 as maxField,
+  proofDataIntoSerializedPreimage,
+  bigIntModFr,
+  valueToBigInt3 as valueToBigInt,
+  bigIntToValue3 as bigIntToValue,
+  runProgram,
+  ContractOperation,
+  ContractMaintenanceAuthority,
+  ContractState2 as ContractState,
+  QueryContext2 as QueryContext,
+  CostModel2 as CostModel,
+  QueryResults,
+  StateBoundedMerkleTree,
+  StateMap,
+  ChargedState2 as ChargedState,
+  StateValue2 as StateValue,
+  VmResults,
+  VmStack
+};
+//# sourceMappingURL=chunk-QJLR5UVC.js.map

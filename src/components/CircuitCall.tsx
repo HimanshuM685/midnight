@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Shield, Sparkles, CheckCircle2, AlertTriangle, EyeOff, Hash, ArrowRight } from "lucide-react";
+import { Shield, Sparkles, CheckCircle2, AlertTriangle, EyeOff, ArrowRight } from "lucide-react";
 
 interface CircuitCallProps {
   contractAddress: string;
@@ -25,15 +25,8 @@ export const CircuitCall: React.FC<CircuitCallProps> = ({
     setTxResult(null);
 
     try {
-      setStatusMessage("1. Generating client-side private witness entropy...");
-      await new Promise((r) => setTimeout(r, 600));
-
-      setStatusMessage("2. Computing local ZK-SNARK circuit proof via Midnight prover...");
-      await new Promise((r) => setTimeout(r, 800));
-
-      setStatusMessage("3. Balancing transaction and submitting to Midnight Preprod...");
+      setStatusMessage("Generating ZK proof locally, then submitting on-chain...");
       const res = await onCallCircuit(amountTier);
-
       setTxResult(res);
       setStatusMessage(null);
     } catch (err: any) {
@@ -123,10 +116,12 @@ export const CircuitCall: React.FC<CircuitCallProps> = ({
               <span className="result-label">Transaction Hash:</span>
               <code className="result-value" id="tx-hash-value">{txResult.txHash}</code>
             </div>
-            <div className="result-row">
-              <span className="result-label">Receipt Commitment:</span>
-              <code className="result-value" id="receipt-commitment-value">{txResult.commitment}</code>
-            </div>
+            {txResult.commitment ? (
+              <div className="result-row">
+                <span className="result-label">Public Receipt Commitment:</span>
+                <code className="result-value" id="receipt-commitment-value">{txResult.commitment}</code>
+              </div>
+            ) : null}
           </div>
           <div className="result-footer">
             <small>

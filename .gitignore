@@ -12,10 +12,16 @@ build/
 dist/
 
 # Compact compiler managed output (generated build artifacts)
-managed/
+/managed/*
+!/managed/.gitkeep
+contract/src/managed/
 keys/
 zkir/
 *.zkir
+!public/keys/
+!public/zkir/
+!public/keys/**
+!public/zkir/**
 
 # Environment files (never commit real secrets)
 .env

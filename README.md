@@ -1,125 +1,128 @@
 # Midnight ZK Tip Jar
-> Privacy-preserving decentralized tipping dApp on Midnight Preprod utilizing Compact Zero-Knowledge SNARK proofs and Lace Wallet.
+> Privacy-preserving tipping dApp on Midnight Preprod: connect Lace, prove a Compact circuit locally, and submit on-chain without revealing private inputs.
 
 ## Live Demo
 https://midnight-zk-tipjar.vercel.app
 
-## Contract Address
-| Network  | Address                                                            |
-|----------|--------------------------------------------------------------------|
-| Preprod  | `02006d6e5f616464725f70726570726f6431717a363033657676383264387137` |
+*(If this URL 404s, deploy with the Vercel/Netlify commands in this README and replace this line with the printed URL.)*
 
-*(Deployment Transaction Hash: `0xd8db046c8c874cc7c363a10583f7f605c45691e1792a45a59eceb098c4ce76ad`)*
+## Contract Address
+| Network  | Address |
+|----------|---------|
+| Preprod  | `02005a7698e6ffbc148c2b7617b43b6dc008985172288339572ad1881512aa643b2f` |
+
+Deployment transaction hash: `0x39a17fb8293732efaa918e690f0559e0dfa8fbcf693800e32f3b5593dbd41688`
 
 ## What This Does
-The Midnight ZK Tip Jar allows any user to connect their Midnight Lace wallet and send a tip or contribution to a designated destination address derived from an environment variable (`NEXT_PUBLIC_RECIPIENT_ADDRESS`).
+This dApp lets you connect Midnight Lace, call the Preprod Tip Jar `tip` circuit, generate a zero-knowledge proof in the browser/wallet prover, and submit the transaction to Midnight Preprod.
 
-Unlike transparent blockchains where every transaction links the sender's wallet address and balance directly to the recipient on-chain, this application evaluates the caller's private keys, donor secret, and random entropy salt as **private witnesses** inside a zero-knowledge circuit locally in the browser. The Midnight network verifies the transaction's validity and updates aggregate jar counters without ever learning who sent the tip.
+The circuit checks that the contribution is for the configured recipient and that you hold a valid donor secret. The public ledger only updates aggregate counters and a blinded receipt commitment. Your donor secret and per-tip salt never appear in the UI and are not written to the chain.
 
 ## Privacy Model
 - **What is PUBLIC:**
-  - The aggregate contract tip count (`tipCount`).
-  - The cumulative volume / tier points (`totalAmount`).
-  - The blinded cryptographic receipt commitment hash (`receiptCommitment = persistentHash(["tipjar:receipt:", recipient, donorSecret, tipSalt])`).
-  - The recipient pay-to-address stored in contract state.
+  - Contract address and network (Preprod)
+  - Aggregate `tipCount` and `totalAmount`
+  - Blinded `recentCommitment` hash
+  - Configured recipient pay-to-address stored in contract state
+  - Transaction identifiers after submission
 - **What is PRIVATE:**
-  - The sender's wallet address and account public keys (`coinPublicKey`, `encryptionPublicKey`).
-  - The caller's 32-byte donor secret key (`donorSecret`).
-  - The per-transaction high-entropy random salt (`tipSalt`).
-  - Any optional private donor note or message.
+  - Donor secret (`donorSecret` witness)
+  - Per-transaction salt (`tipSalt` witness)
+  - Wallet private keys
 - **What the user PROVES without revealing:**
-  - The user proves they possess a valid donor secret key authorizing the tip.
-  - The user proves the tip is directed strictly to the configured recipient address.
-  - The user proves the tip contribution tier is strictly positive (`amountTier > 0`).
-  - The user generates an un-linkable cryptographic receipt commitment without revealing the donor secret or salt on-chain.
+  - They know a valid donor secret authorizing the tip
+  - The tip is bound to the configured recipient
+  - The selected amount tier is strictly positive
 
 ## Privacy Claim
-An on-chain observer or indexer can only observe that a valid zero-knowledge proof was verified, that the public tip counter incremented by 1, and that a blinded receipt commitment hash was published. 
+An on-chain observer can see that a valid ZK proof was verified, that public counters moved, and that a commitment hash was published.
 
-An on-chain observer **cannot** see the sender's identity, cannot link the sender's wallet address to the transaction, cannot inspect the private donor secret or entropy salt, and cannot correlate multiple tips from the same donor across different transactions.
+An on-chain observer cannot see the donor secret, the salt, or a link from that secret back to a Lace identity in the dApp UI. The private input is never rendered on screen.
 
 ## Tech Stack
-- **Blockchain:** Midnight Network (Preprod Testnet)
-- **Smart Contract Language:** Compact (0.20+)
-- **SDK & APIs:** Midnight.js SDK (`@midnight-ntwrk/dapp-connector-api`, `@midnight-ntwrk/midnight-js-contracts`)
-- **Frontend Framework:** React 18, Vite, TypeScript
-- **Wallet:** Lace Wallet (Midnight Edition)
-- **Deployment & Hosting:** Vercel / Netlify (`vercel.json`, `netlify.toml`)
+Midnight network, Compact, Midnight.js SDK, React/Vite, Lace wallet
+
+- **Network:** Midnight Preprod
+- **Contract:** Compact (`contracts/counter.compact`, `contracts/tip_jar.compact`)
+- **SDK:** `@midnight-ntwrk/dapp-connector-api`, `@midnight-ntwrk/midnight-js-indexer-public-data-provider`, `@midnight-ntwrk/midnight-js-contracts`
+- **Frontend:** React 18 + Vite
+- **Wallet:** Lace (Midnight)
 
 ## Prerequisites
-- Midnight Lace Wallet browser extension installed and unlocked on **Preprod** network
-- Node.js v22 (`v22.x`)
-- npm (`v10.x`+)
+- Lace wallet installed (Midnight edition), unlocked on **Preprod**
+- Node.js v22
+- npm 10+
+- Optional local proof server (Lace may supply `proverServerUri`):
+
+```bash
+docker run -d -p 6300:6300 midnightntwrk/proof-server:8.0.3 -- midnight-proof-server --network preprod
+```
 
 ## Run Locally
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/HimanshuM685/midnight.git
-   cd midnight
-   ```
+```bash
+git clone https://github.com/HimanshuM685/midnight.git
+cd midnight
+cp .env.example .env
+npm install
+npm run dev
+```
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+Open http://localhost:3000, connect Lace, then call the circuit.
 
-3. **Configure environment variables:**
-   ```bash
-   cp frontend/.env.example .env.local
-   ```
-   Ensure `NEXT_PUBLIC_RECIPIENT_ADDRESS` and `NEXT_PUBLIC_CONTRACT_ADDRESS` are set.
+Production build:
 
-4. **Start the local Vite development server:**
-   ```bash
-   npm run dev
-   ```
-   Open **http://localhost:3000** in your browser.
+```bash
+npm run build
+npm run preview
+```
 
-5. **Deploy contract via CLI (optional):**
-   ```bash
-   npm run deploy:wallet
-   ```
+## Deploy Frontend
 
-6. **Build for production:**
-   ```bash
-   npm run build
-   ```
+The live URL must be built with the Preprod contract address (`VITE_CONTRACT_ADDRESS` in `.env.production`).
+
+### Vercel
+
+```bash
+npm install
+npm run build
+npx vercel login
+npx vercel --prod
+```
+
+### Netlify
+
+```bash
+npm install
+npm run build
+npx netlify login
+npx netlify deploy --prod --dir=dist
+```
+
+After deploy, paste the printed HTTPS URL into the Live Demo section above.
 
 ## Demo Video
-https://youtu.be/midnight-zk-tipjar-demo
-*(Placeholder: screen recording demonstrating Lace wallet connection, local ZK proof generation loading state, on-chain confirmation, and private input shielding)*
+[PLACEHOLDER — I will add the link after recording]
 
----
-
-## 📁 Repository File Structure
+## File Structure
 
 ```
-midnight/
+my-project/
 ├── contracts/
-│   ├── counter.compact          # Level 1 Compact counter contract
-│   └── tip_jar.compact          # Level 2 Tip Jar Compact contract
-├── managed/                     # Compiled Compact contract artifacts
+│   └── counter.compact
+├── managed/
 ├── src/
 │   ├── components/
-│   │   ├── WalletConnect.tsx    # Wallet connect/disconnect UI component
-│   │   └── CircuitCall.tsx      # Circuit call button, ZK proof state, result display
+│   │   ├── WalletConnect.tsx
+│   │   └── CircuitCall.tsx
 │   ├── hooks/
-│   │   └── useMidnight.ts       # Midnight.js & Lace wallet connection hook
-│   ├── App.tsx                  # Main React application shell
-│   ├── App.css                  # Modern dark glassmorphic styling
-│   └── main.tsx                 # Vite React entrypoint
+│   │   └── useMidnight.ts
+│   ├── App.tsx
+│   └── main.tsx
 ├── tests/
-│   └── contract.test.ts         # Contract verification tests
 ├── public/
-│   └── manifest.json            # Public web assets
 ├── .github/
-│   └── workflows/ci.yml         # GitHub Actions CI pipeline
-├── deploy/                      # Headless Midnight Preprod deployment pipeline
-├── web-wallet-connect/          # Web Wallet Connect & in-browser deployer module
-├── vercel.json                  # Vercel deployment configuration
-├── netlify.toml                 # Netlify deployment configuration
-├── vite.config.ts               # Vite bundler configuration
-├── package.json                 # Monorepo root configuration & scripts
-└── README.md                    # Project documentation & Level 2 rubric
+├── README.md
+├── package.json
+└── vite.config.ts
 ```
