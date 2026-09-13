@@ -104,6 +104,18 @@ midnight/
 │   ├── package.json
 │   └── tsconfig.json
 │
+├── web-wallet-connect/          # Web Wallet Connect & In-Browser Deployer
+│   ├── src/
+│   │   ├── walletConnector.ts   # Injected wallet discovery & session manager
+│   │   ├── contractDeployer.ts  # In-browser contract deployer via Lace
+│   │   ├── cliDeploy.ts         # Standalone CLI deploy runner
+│   │   ├── types.ts             # Wallet & deployment type definitions
+│   │   └── index.ts             # Module exports
+│   ├── deployment-record.json   # Verifiable contract deployment output
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── README.md
+│
 ├── package.json                 # Monorepo root workspace configuration
 └── README.md                    # Project documentation & submission report
 ```
@@ -159,6 +171,15 @@ Open **http://localhost:3000** in your browser.
 2. Select your tip amount or input a custom value.
 3. Click **Send ZK Tip**.
 4. Observe the live execution log as client witnesses are prepared, ZK proofs generated, and the transaction submitted.
+
+### 3. Deploying the Contract via Web Wallet
+You can deploy a fresh Tip Jar contract directly on-chain using:
+- **In-Browser Deploy**: Connect Lace wallet in the UI, then click **Deploy Tip Jar Contract via Web Wallet** in the right column.
+- **CLI Runner**:
+  ```bash
+  npm run deploy:wallet
+  ```
+  This generates `web-wallet-connect/deployment-record.json` and prints the on-chain contract address.
 
 ---
 

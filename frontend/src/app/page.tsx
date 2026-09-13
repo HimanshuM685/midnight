@@ -13,6 +13,10 @@ import {
 import { APP_CONFIG } from "../lib/config";
 import { truncateAddress } from "../lib/walletAdapter";
 import {
+  deployContractWithWebWallet,
+  type WebDeploymentProgress,
+} from "../lib/webWalletDeployer";
+import {
   Shield,
   Wallet,
   CheckCircle2,
@@ -24,6 +28,7 @@ import {
   EyeOff,
   AlertCircle,
   RefreshCw,
+  Rocket,
 } from "lucide-react";
 
 const PRESET_AMOUNTS = [5, 10, 25, 50, 100];
@@ -39,11 +44,16 @@ interface LogEntry {
 export default function TipJarPage() {
   const wallet = useWallet();
   const [contract, setContract] = useState<DeployedTipJarContract | null>(null);
+  const [activeContractAddress, setActiveContractAddress] = useState<string>(
+    APP_CONFIG.contractAddress
+  );
   const [stats, setStats] = useState<TipJarStats | null>(null);
   const [selectedAmount, setSelectedAmount] = useState<number>(25);
   const [customAmount, setCustomAmount] = useState<string>("");
   const [donorNote, setDonorNote] = useState<string>("");
   const [tipping, setTipping] = useState<boolean>(false);
+  const [isDeploying, setIsDeploying] = useState<boolean>(false);
+  const [deployProgress, setDeployProgress] = useState<WebDeploymentProgress | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
   const [recentTipResult, setRecentTipResult] = useState<TipResult | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -168,6 +178,46 @@ export default function TipJarPage() {
       addLog(`Tipping failed: ${err?.message || err}`, undefined, "warn");
     } finally {
       setTipping(false);
+    }
+  };
+
+  const handleDeployContract = async () => {
+    if (!wallet.session) {
+      alert("Please connect your Midnight Lace wallet first.");
+      return;
+    }
+
+    setIsDeploying(true);
+    setDeployProgress(null);
+
+    try {
+      addLog("Starting in-browser contract deployment via connected web wallet...", undefined, "info");
+      const result = await deployContractWithWebWallet(
+        wallet.session,
+        APP_CONFIG.recipientAddress,
+        (p) => {
+          setDeployProgress(p);
+          addLog(p.message, p.txHash, p.step === "confirmed" ? "success" : "info");
+        }
+      );
+
+      setActiveContractAddress(result.contractAddress);
+      addLog(
+        `Contract deployed on Preprod! Address: ${result.contractAddress}`,
+        result.txHash,
+        "success"
+      );
+
+      // Re-initialize contract handle with newly deployed address
+      const instance = await initTipJarContract(wallet.session);
+      instance.contractAddress = result.contractAddress;
+      setContract(instance);
+      const freshStats = await fetchTipJarStats(instance);
+      setStats(freshStats);
+    } catch (err: any) {
+      addLog(`Deployment failed: ${err?.message || err}`, undefined, "warn");
+    } finally {
+      setIsDeploying(false);
     }
   };
 
@@ -457,6 +507,85 @@ export default function TipJarPage() {
 
         {/* Right Column: Public Ledger Stats & Activity Log */}
         <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+          {/* Web Wallet Contract Deployer Card */}
+          <div className="glass-card">
+            <h2
+              style={{
+                fontSize: "1.1rem",
+                fontWeight: 700,
+                marginBottom: "0.5rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+              }}
+            >
+              <Rocket size={18} color="#8b5cf6" />
+              <span>Web Wallet Contract Deployer</span>
+            </h2>
+            <p
+              style={{
+                fontSize: "0.85rem",
+                color: "var(--text-secondary)",
+                marginBottom: "1.25rem",
+              }}
+            >
+              Deploy a new Tip Jar instance on Midnight Preprod directly using your connected Lace wallet.
+            </p>
+
+            <button
+              className="btn btn-secondary"
+              style={{ width: "100%", padding: "0.75rem", marginBottom: "1rem" }}
+              disabled={!wallet.connected || isDeploying}
+              onClick={handleDeployContract}
+            >
+              {isDeploying ? (
+                <>
+                  <div className="spinner" />
+                  <span>Deploying on Preprod...</span>
+                </>
+              ) : (
+                <>
+                  <Rocket size={16} />
+                  <span>Deploy Tip Jar Contract via Web Wallet</span>
+                </>
+              )}
+            </button>
+
+            {deployProgress && (
+              <div
+                style={{
+                  padding: "0.75rem",
+                  borderRadius: "0.5rem",
+                  background:
+                    deployProgress.step === "confirmed"
+                      ? "rgba(16, 185, 129, 0.1)"
+                      : "rgba(139, 92, 246, 0.1)",
+                  border: `1px solid ${
+                    deployProgress.step === "confirmed"
+                      ? "rgba(16, 185, 129, 0.3)"
+                      : "rgba(139, 92, 246, 0.3)"
+                  }`,
+                  fontSize: "0.82rem",
+                  color: "#e2e8f0",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontWeight: 600 }}>
+                  {deployProgress.step === "confirmed" ? (
+                    <CheckCircle2 size={15} color="#34d399" />
+                  ) : (
+                    <RefreshCw size={15} color="#c4b5fd" className="animate-spin" />
+                  )}
+                  <span>{deployProgress.message}</span>
+                </div>
+                {deployProgress.contractAddress && (
+                  <div style={{ marginTop: "0.4rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem", color: "#38bdf8" }}>
+                    Address: {deployProgress.contractAddress}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* On-Chain Stats Card */}
           <div className="glass-card">
             <div

@@ -6,12 +6,14 @@
   "workspaces": [
     "contract",
     "deploy",
-    "frontend"
+    "frontend",
+    "web-wallet-connect"
   ],
   "scripts": {
     "dev": "npm --workspace=frontend run dev",
     "build": "npm --workspace=frontend run build",
     "deploy:preprod": "npm --workspace=deploy run deploy:preprod",
+    "deploy:wallet": "npm --workspace=web-wallet-connect run deploy:wallet",
     "compile:contract": "npm --workspace=contract run compile"
   },
   "keywords": [

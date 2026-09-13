@@ -1,0 +1,23 @@
+{
+  "name": "web-wallet-connect",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Web Wallet Connector and In-Browser Contract Deployer for Midnight Chain.",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "deploy:wallet": "tsx src/cliDeploy.ts"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/midnight-js-contracts": "^4.0.0",
+    "@midnight-ntwrk/midnight-js-fetch-zk-config-provider": "^2.0.2",
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "^2.0.2",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "^2.0.2",
+    "@midnight-ntwrk/midnight-js-level-private-state-provider": "^2.0.2"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
