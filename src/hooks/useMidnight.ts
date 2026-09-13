@@ -11,9 +11,11 @@ export interface MidnightWalletState {
 }
 
 export const PREPROD_CONTRACT_ADDRESS =
+  (typeof import.meta !== "undefined" && (import.meta.env?.VITE_CONTRACT_ADDRESS || import.meta.env?.NEXT_PUBLIC_CONTRACT_ADDRESS)) ||
   "02006d6e5f616464725f70726570726f6431717a363033657676383264387137";
 
 export const PREPROD_RECIPIENT_ADDRESS =
+  (typeof import.meta !== "undefined" && (import.meta.env?.VITE_RECIPIENT_ADDRESS || import.meta.env?.NEXT_PUBLIC_RECIPIENT_ADDRESS)) ||
   "mn_addr_preprod1qz603evv82d8q7c040d9hswvx774hkmz7v9593z7v8fwn62g6f5su3a07t";
 
 export function useMidnight() {

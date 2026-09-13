@@ -12,7 +12,9 @@
   ],
   "scripts": {
     "dev": "vite",
+    "dev:deployer": "npm --workspace=web-wallet-connect run dev",
     "build": "vite build",
+    "build:deployer": "npm --workspace=web-wallet-connect run build",
     "preview": "vite preview",
     "dev:next": "npm --workspace=frontend run dev",
     "build:next": "npm --workspace=frontend run build",
