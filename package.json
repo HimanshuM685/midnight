@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Privacy-preserving Tip Jar dApp on Midnight Network with Compact ZK circuits and Lace wallet integration.",
+  "type": "module",
   "workspaces": [
     "contract",
     "deploy",
@@ -10,11 +11,27 @@
     "web-wallet-connect"
   ],
   "scripts": {
-    "dev": "npm --workspace=frontend run dev",
-    "build": "npm --workspace=frontend run build",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "dev:next": "npm --workspace=frontend run dev",
+    "build:next": "npm --workspace=frontend run build",
     "deploy:preprod": "npm --workspace=deploy run deploy:preprod",
     "deploy:wallet": "npm --workspace=web-wallet-connect run deploy:wallet",
     "compile:contract": "npm --workspace=contract run compile"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/dapp-connector-api": "^4.0.1",
+    "lucide-react": "^0.475.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.0"
   },
   "keywords": [
     "midnight-network",

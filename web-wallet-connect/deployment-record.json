@@ -1,9 +1,9 @@
 {
   "network": "preprod",
   "contractAddress": "02006d6e5f616464725f70726570726f6431717a363033657676383264387137",
-  "txHash": "0xd7731922b1242a7176ec4597f40f95e25dffe9490b0c307fdfbfc020e6506962",
+  "txHash": "0xd8db046c8c874cc7c363a10583f7f605c45691e1792a45a59eceb098c4ce76ad",
   "payToAddress": "mn_addr_preprod1qz603evv82d8q7c040d9hswvx774hkmz7v9593z7v8fwn62g6f5su3a07t",
-  "deployedAt": "2026-09-13T18:07:17.829Z",
+  "deployedAt": "2026-09-13T18:23:25.566Z",
   "endpoints": {
     "indexer": "https://indexer.preprod.midnight.network/api/v1/graphql",
     "node": "https://rpc.preprod.midnight.network",

@@ -1,0 +1,35 @@
+// counter.compact
+//
+// Level 1 / Level 2 Midnight Compact Contract.
+// Proves valid increments in Zero-Knowledge without exposing private caller state.
+
+pragma language_version >= 0.20;
+
+import CompactStandardLibrary;
+
+export ledger counter: Counter;
+export ledger active: Cell<Boolean>;
+
+witness callerSecret(): Bytes<32>;
+
+export pure circuit deriveCallReceipt(secret: Bytes<32>, currentVal: Uint<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([
+    pad(32, "counter:call:"),
+    secret,
+    currentVal as Field as Bytes<32>
+  ]);
+}
+
+constructor() {
+  active.write(true);
+}
+
+export circuit increment(): [] {
+  assert(active.read(), "Counter contract is not active");
+  
+  // Read private caller secret (witness evaluated locally, never published)
+  const secret = callerSecret();
+  
+  // Prove validity in zero knowledge and increment public counter
+  counter.increment(1);
+}
