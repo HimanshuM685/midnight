@@ -91,49 +91,44 @@ async function main() {
   };
 
   console.log("\n[3/4] Initializing Tip Jar contract and witnesses...");
-  // Attempt to load compiled contract bundle if available
+  // Attempt to load compiled contract bundle
   let ContractClass: any;
-  const managedPath = path.resolve(__dirname, "../contract/src/managed/tip_jar/contract/index.cjs");
-  if (fs.existsSync(managedPath)) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const mod = require(managedPath);
+  const managedPathJs = path.resolve(__dirname, "../contract/src/managed/tip_jar/contract/index.js");
+  const managedPathCjs = path.resolve(__dirname, "../contract/src/managed/tip_jar/contract/index.cjs");
+
+  if (fs.existsSync(managedPathJs)) {
+    const mod = await import(managedPathJs);
     ContractClass = mod.Contract;
+    console.log("✓ Loaded real compiled Compact contract from", managedPathJs);
+  } else if (fs.existsSync(managedPathCjs)) {
+    const mod = await import(managedPathCjs);
+    ContractClass = mod.Contract;
+    console.log("✓ Loaded real compiled Compact contract from", managedPathCjs);
   } else {
-    console.log("Notice: Compiled contract binary not found at", managedPath);
-    console.log("Using Mock/Generic Contract class definition for deployment scaffolding.");
-    ContractClass = class MockTipJarContract {
-      constructor(public witnesses: any) {}
-    };
+    throw new Error(
+      `Compiled contract not found at ${managedPathJs}. Run Compact compiler first.`
+    );
   }
 
   const witnesses = createWitnesses(() => null);
   const contractInstance = new ContractClass(witnesses);
 
-  console.log("\n[4/4] Submitting deployment transaction to Preprod network...");
+  console.log("\n[4/4] Submitting real deployment transaction to Preprod network...");
   let deployedAddress = "";
   let txHash = "";
 
-  try {
-    const deployed = await deployContract(providers, {
-      contract: contractInstance,
-      initialArgs: [recipientBytes],
-      privateStateId: "tipJarPrivateState",
-      initialPrivateState: emptyPrivateTipJarState(),
-    });
+  const deployed = await deployContract(providers, {
+    contract: contractInstance,
+    initialArgs: [recipientBytes],
+    privateStateId: "tipJarPrivateState",
+    initialPrivateState: emptyPrivateTipJarState(),
+  });
 
-    deployedAddress = deployed.deployTxData.public.contractAddress;
-    txHash = deployed.deployTxData.public.txHash;
-    console.log("\n Deployment Succeeded!");
-    console.log("Contract Address:", deployedAddress);
-    console.log("Transaction Hash:", txHash);
-  } catch (err: any) {
-    console.warn("Deploy call returned:", err.message || err);
-    // If running in an offline or scaffold environment without live indexer:
-    deployedAddress = "0200" + Array.from(recipientBytes.slice(0, 30)).map(b => b.toString(16).padStart(2, "0")).join("");
-    txHash = "0x" + Array.from(recipientBytes).map(b => (b ^ 0xaa).toString(16).padStart(2, "0")).join("");
-    console.log("\n Scaffolding fallback contract address for testing:");
-    console.log("Contract Address:", deployedAddress);
-  }
+  deployedAddress = deployed.deployTxData.public.contractAddress;
+  txHash = deployed.deployTxData.public.txHash;
+  console.log("\n Deployment Succeeded on Midnight Preprod!");
+  console.log("Real Contract Address:", deployedAddress);
+  console.log("Transaction Hash:", txHash);
 
   // Save deployment artifact
   const deploymentInfo = {

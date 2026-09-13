@@ -23,7 +23,7 @@ import CompactStandardLibrary;
 // Visible to all network participants, explorers, and the Midnight indexer.
 
 // Configured pay-to-address (32-byte public key / address hash).
-export ledger recipient: Cell<Bytes<32>>;
+export ledger recipient: Bytes<32>;
 
 // Cumulative count of tips received by this jar.
 export ledger tipCount: Counter;
@@ -32,10 +32,10 @@ export ledger tipCount: Counter;
 export ledger totalAmount: Counter;
 
 // The cryptographic receipt commitment of the most recent tip.
-export ledger recentCommitment: Cell<Bytes<32>>;
+export ledger recentCommitment: Bytes<32>;
 
 // Operational switch for the tip jar.
-export ledger jarOpen: Cell<Boolean>;
+export ledger jarOpen: Boolean;
 
 // ── Private Witnesses ─────────────────────────────────────────────────────
 // Supplied locally by the user's browser runtime at proof generation time.
@@ -64,8 +64,8 @@ export pure circuit deriveReceipt(
 // ── Constructor ───────────────────────────────────────────────────────────
 // Initializes the tip jar with the pay-to-address derived from environment config.
 constructor(initialRecipient: Bytes<32>) {
-  recipient.write(disclose(initialRecipient));
-  jarOpen.write(true);
+  recipient = disclose(initialRecipient);
+  jarOpen = true;
 }
 
 // ── Exported Circuits ─────────────────────────────────────────────────────
@@ -74,15 +74,15 @@ constructor(initialRecipient: Bytes<32>) {
 // Takes the expected recipient address and amount tier.
 // Evaluates private witnesses locally, proves validity in ZK-SNARK,
 // and increments public tallies without revealing donor credentials.
-export circuit tip(expectedRecipient: Bytes<32>, amountTier: Uint<32>): [] {
+export circuit tip(expectedRecipient: Bytes<32>, amountTier: Uint<16>): [] {
   // 1. Ensure the jar is active
-  assert(jarOpen.read(), "Tip jar is currently inactive");
+  assert(jarOpen, "Tip jar is currently inactive");
 
   // 2. Enforce pay-to-address integrity: tip MUST go to the configured recipient
-  assert(disclose(expectedRecipient) == recipient.read(), "Recipient address mismatch");
+  assert(disclose(expectedRecipient) == recipient, "Recipient address mismatch");
 
   // 3. Enforce positive tip contribution
-  assert(disclose(amountTier) > 0 as Uint<32>, "Tip amount tier must be greater than zero");
+  assert(disclose(amountTier) > 0, "Tip amount tier must be greater than zero");
 
   // 4. Retrieve private witnesses (evaluates in browser, folded into ZK witness)
   const secret = donorSecret();
@@ -92,22 +92,12 @@ export circuit tip(expectedRecipient: Bytes<32>, amountTier: Uint<32>): [] {
   const receipt = deriveReceipt(expectedRecipient, secret, salt);
 
   // 6. Update public aggregates (disclosing only the public result, not inputs)
-  recentCommitment.write(disclose(receipt));
+  recentCommitment = disclose(receipt);
   tipCount.increment(1);
   totalAmount.increment(disclose(amountTier));
 }
 
 // Admin circuit to pause or resume tipping
 export circuit setJarState(isOpen: Boolean): [] {
-  jarOpen.write(disclose(isOpen));
-}
-
-// Helper query circuit to read current jar summary
-export circuit getJarStats(): [Uint<32>, Uint<32>, Bytes<32>, Boolean] {
-  return [
-    tipCount.read(),
-    totalAmount.read(),
-    recentCommitment.read(),
-    jarOpen.read()
-  ];
+  jarOpen = disclose(isOpen);
 }
