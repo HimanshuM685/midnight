@@ -6,7 +6,11 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 import { normalizeAddressTo32Bytes } from "./contractDeployer";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const DEFAULT_RECIPIENT =
   process.env.NEXT_PUBLIC_RECIPIENT_ADDRESS ||
@@ -45,7 +49,8 @@ async function runCliDeploy() {
     },
   };
 
-  const outPath = path.resolve(process.cwd(), "web-wallet-connect/deployment-record.json");
+  const outPath = path.resolve(__dirname, "../deployment-record.json");
+  fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, JSON.stringify(deploymentResult, null, 2), "utf8");
 
   console.log("\n Contract Deployed Successfully!");
