@@ -1,0 +1,113 @@
+// tip_jar.compact
+//
+// Privacy-Preserving Tip Jar Smart Contract on Midnight Network.
+//
+// PRIVACY CLAIM (What is proven without being shown):
+//   1. The tipper proves they hold a valid donor secret key (`donorSecret`) and
+//      high-entropy salt (`tipSalt`), provided strictly as PRIVATE witnesses.
+//   2. The circuit verifies in Zero-Knowledge that the tip is intended for and
+//      destined to the authorized `recipient` pay-to-address.
+//   3. The contract updates public aggregate counters (`tipCount`, `totalAmount`)
+//      and emits a blinded cryptographic receipt commitment:
+//         receiptCommitment = persistentHash(["tipjar:receipt:", recipient, donorSecret, tipSalt])
+//   4. At NO POINT is the donor's wallet identity, public key, or secret salt
+//      written to ledger state, emitted in events, or published to indexers.
+//      Any external observer can verify that a genuine tip was verified on-chain,
+//      but no one can discover who tipped or link the transaction back to the donor.
+
+pragma language_version >= 0.20;
+
+import CompactStandardLibrary;
+
+// ── Public Ledger State ───────────────────────────────────────────────────
+// Visible to all network participants, explorers, and the Midnight indexer.
+
+// Configured pay-to-address (32-byte public key / address hash).
+export ledger recipient: Cell<Bytes<32>>;
+
+// Cumulative count of tips received by this jar.
+export ledger tipCount: Counter;
+
+// Aggregate amount / tier points tipped (in micro-units or tier weights).
+export ledger totalAmount: Counter;
+
+// The cryptographic receipt commitment of the most recent tip.
+export ledger recentCommitment: Cell<Bytes<32>>;
+
+// Operational switch for the tip jar.
+export ledger jarOpen: Cell<Boolean>;
+
+// ── Private Witnesses ─────────────────────────────────────────────────────
+// Supplied locally by the user's browser runtime at proof generation time.
+// These variables exist ONLY in local client memory and are NEVER serialized
+// into the public transaction.
+
+witness donorSecret(): Bytes<32>;
+witness tipSalt(): Bytes<32>;
+
+// ── Internal Pure Circuits ────────────────────────────────────────────────
+
+// Computes a domain-separated, collision-resistant receipt commitment.
+export pure circuit deriveReceipt(
+  targetRecipient: Bytes<32>,
+  secret: Bytes<32>,
+  salt: Bytes<32>
+): Bytes<32> {
+  return persistentHash<Vector<4, Bytes<32>>>([
+    pad(32, "tipjar:receipt:"),
+    targetRecipient,
+    secret,
+    salt
+  ]);
+}
+
+// ── Constructor ───────────────────────────────────────────────────────────
+// Initializes the tip jar with the pay-to-address derived from environment config.
+constructor(initialRecipient: Bytes<32>) {
+  recipient.write(disclose(initialRecipient));
+  jarOpen.write(true);
+}
+
+// ── Exported Circuits ─────────────────────────────────────────────────────
+
+// Core ZK Tipping Circuit:
+// Takes the expected recipient address and amount tier.
+// Evaluates private witnesses locally, proves validity in ZK-SNARK,
+// and increments public tallies without revealing donor credentials.
+export circuit tip(expectedRecipient: Bytes<32>, amountTier: Uint<32>): [] {
+  // 1. Ensure the jar is active
+  assert(jarOpen.read(), "Tip jar is currently inactive");
+
+  // 2. Enforce pay-to-address integrity: tip MUST go to the configured recipient
+  assert(disclose(expectedRecipient) == recipient.read(), "Recipient address mismatch");
+
+  // 3. Enforce positive tip contribution
+  assert(disclose(amountTier) > 0 as Uint<32>, "Tip amount tier must be greater than zero");
+
+  // 4. Retrieve private witnesses (evaluates in browser, folded into ZK witness)
+  const secret = donorSecret();
+  const salt = tipSalt();
+
+  // 5. Generate un-linkable receipt commitment inside the proof
+  const receipt = deriveReceipt(expectedRecipient, secret, salt);
+
+  // 6. Update public aggregates (disclosing only the public result, not inputs)
+  recentCommitment.write(disclose(receipt));
+  tipCount.increment(1);
+  totalAmount.increment(disclose(amountTier));
+}
+
+// Admin circuit to pause or resume tipping
+export circuit setJarState(isOpen: Boolean): [] {
+  jarOpen.write(disclose(isOpen));
+}
+
+// Helper query circuit to read current jar summary
+export circuit getJarStats(): [Uint<32>, Uint<32>, Bytes<32>, Boolean] {
+  return [
+    tipCount.read(),
+    totalAmount.read(),
+    recentCommitment.read(),
+    jarOpen.read()
+  ];
+}

@@ -1,0 +1,17 @@
+{
+  "name": "tipjar-contract",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Compact smart contract and ZK circuits for the Midnight Tip Jar application.",
+  "type": "module",
+  "scripts": {
+    "compile": "compactc src/tip_jar.compact src/managed/tip_jar",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "^0.16.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  }
+}
