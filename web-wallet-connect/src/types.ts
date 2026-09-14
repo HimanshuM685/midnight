@@ -1,16 +1,10 @@
 /**
  * types.ts
  *
- * Types for Web Wallet Connect and In-Browser Contract Deployment on Midnight Network.
+ * Types for real Lace-backed contract deployment on Midnight Preprod.
  */
 
-export interface WebWalletInfo {
-  id: string;
-  name: string;
-  icon?: string;
-  apiVersion?: string;
-  isInstalled: boolean;
-}
+import type { ConnectedAPI } from "@midnight-ntwrk/dapp-connector-api";
 
 export interface WebWalletEndpoints {
   indexerUri: string;
@@ -20,7 +14,7 @@ export interface WebWalletEndpoints {
 }
 
 export interface WebWalletAccountState {
-  address: string;
+  unshieldedAddress: string;
   coinPublicKey: string;
   encryptionPublicKey: string;
 }
@@ -29,7 +23,7 @@ export interface ConnectedWebWalletSession {
   walletId: string;
   account: WebWalletAccountState;
   endpoints: WebWalletEndpoints;
-  api: any; // MidnightWalletConnectedAPI
+  api: ConnectedAPI;
   connectedAt: number;
 }
 
@@ -54,7 +48,6 @@ export interface DeploymentProgress {
 }
 
 export interface ContractDeployOptions {
-  recipientAddress: string;
   networkId?: string;
   onProgress?: (progress: DeploymentProgress) => void;
 }

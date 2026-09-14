@@ -1,8 +1,27 @@
 export const NETWORK_ID = import.meta.env.VITE_NETWORK_ID || "preprod";
 
-export const PREPROD_CONTRACT_ADDRESS =
+/** Midnight contract addresses must be exactly 32 bytes (64 hex digits). */
+export function normalizeContractAddress(raw: string): string {
+  const hex = raw.trim().replace(/^0x/i, "");
+  if (!/^[0-9a-fA-F]+$/.test(hex)) {
+    throw new Error(`Invalid contract address (non-hex): ${raw}`);
+  }
+  if (hex.length !== 64) {
+    throw new Error(
+      `Contract address must be 64 hex characters (32 bytes). Got ${hex.length} chars.` +
+        (hex.length === 63
+          ? ` Missing a trailing digit — copy the full address from Midnight Explorer (e.g. …${hex.slice(-8)}8).`
+          : ` Value: ${hex.slice(0, 16)}…${hex.slice(-8)}`)
+    );
+  }
+  return hex.toLowerCase();
+}
+
+const rawContractAddress =
   import.meta.env.VITE_CONTRACT_ADDRESS ||
-  "02005a7698e6ffbc148c2b7617b43b6dc008985172288339572ad1881512aa643b2f";
+  "a580d19886569406b03ff73bb0e15a2a5d4c5bc9e0a41508b0f4f4cf044c1188";
+
+export const PREPROD_CONTRACT_ADDRESS = normalizeContractAddress(rawContractAddress);
 
 export const PREPROD_RECIPIENT_ADDRESS =
   import.meta.env.VITE_RECIPIENT_ADDRESS ||

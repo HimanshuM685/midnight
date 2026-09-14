@@ -5,13 +5,25 @@
   "description": "Midnight Web Wallet Connect & 1-Click Contract Deployer Web App.",
   "type": "module",
   "scripts": {
+    "copy:zk": "mkdir -p public/keys public/zkir && cp ../contract/src/managed/tip_jar/keys/* public/keys/ && cp ../contract/src/managed/tip_jar/zkir/* public/zkir/",
+    "predev": "npm run copy:zk",
+    "prebuild": "npm run copy:zk",
     "dev": "vite --port 3001",
     "build": "vite build",
-    "preview": "vite preview",
-    "deploy:wallet": "tsx src/cliDeploy.ts"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@midnight-ntwrk/dapp-connector-api": "^4.0.1",
+    "@midnight-ntwrk/midnight-js-contracts": "^4.1.1",
+    "@midnight-ntwrk/midnight-js-fetch-zk-config-provider": "^4.1.1",
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "^4.1.1",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "^4.1.1",
+    "@midnight-ntwrk/midnight-js-network-id": "^4.1.1",
+    "@midnight-ntwrk/midnight-js-protocol": "^4.1.1",
+    "@midnight-ntwrk/midnight-js-types": "^4.1.1",
+    "@midnight-ntwrk/midnight-js-utils": "^4.1.1",
+    "@midnight-ntwrk/wallet-sdk-address-format": "^3.1.2",
+    "buffer": "^6.0.3",
     "lucide-react": "^0.475.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
@@ -20,8 +32,8 @@
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
-    "tsx": "^4.19.3",
     "typescript": "^5.8.2",
-    "vite": "^6.2.0"
+    "vite": "^6.2.0",
+    "vite-plugin-wasm": "^3.5.0"
   }
 }

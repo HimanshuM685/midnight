@@ -22,7 +22,6 @@
     "dev:next": "npm --workspace=frontend run dev",
     "build:next": "npm --workspace=frontend run build",
     "deploy:preprod": "npm --workspace=deploy run deploy:preprod",
-    "deploy:wallet": "npm --workspace=web-wallet-connect run deploy:wallet",
     "compile:contract": "npm --workspace=contract run compile"
   },
   "dependencies": {

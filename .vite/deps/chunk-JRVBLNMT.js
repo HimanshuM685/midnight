@@ -29,13 +29,15 @@ import {
   __export
 } from "./chunk-IKZWERSR.js";
 
-// node_modules/@midnight-ntwrk/compact-js/dist/esm/effect/Contract.js
-var Contract_exports = {};
-__export(Contract_exports, {
-  ProvableCircuitId: () => ProvableCircuitId,
-  VerifierKey: () => VerifierKey,
-  ZKIR: () => ZKIR,
-  getProvableCircuitIds: () => getProvableCircuitIds
+// node_modules/@midnight-ntwrk/compact-js/dist/esm/effect/CompiledContract.js
+var CompiledContract_exports = {};
+__export(CompiledContract_exports, {
+  TypeId: () => TypeId39,
+  getCompiledAssetsPath: () => getCompiledAssetsPath,
+  make: () => make97,
+  withCompiledFileAssets: () => withCompiledFileAssets,
+  withVacantWitnesses: () => withVacantWitnesses,
+  withWitnesses: () => withWitnesses
 });
 
 // node_modules/effect/dist/esm/Function.js
@@ -182,6 +184,50 @@ function flow(ab, bc, cd, de, ef, fg, gh, hi, ij) {
   return;
 }
 var hole = unsafeCoerce(absurd);
+
+// node_modules/effect/dist/esm/Pipeable.js
+var pipeArguments = (self, args2) => {
+  switch (args2.length) {
+    case 0:
+      return self;
+    case 1:
+      return args2[0](self);
+    case 2:
+      return args2[1](args2[0](self));
+    case 3:
+      return args2[2](args2[1](args2[0](self)));
+    case 4:
+      return args2[3](args2[2](args2[1](args2[0](self))));
+    case 5:
+      return args2[4](args2[3](args2[2](args2[1](args2[0](self)))));
+    case 6:
+      return args2[5](args2[4](args2[3](args2[2](args2[1](args2[0](self))))));
+    case 7:
+      return args2[6](args2[5](args2[4](args2[3](args2[2](args2[1](args2[0](self)))))));
+    case 8:
+      return args2[7](args2[6](args2[5](args2[4](args2[3](args2[2](args2[1](args2[0](self))))))));
+    case 9:
+      return args2[8](args2[7](args2[6](args2[5](args2[4](args2[3](args2[2](args2[1](args2[0](self)))))))));
+    default: {
+      let ret = self;
+      for (let i = 0, len = args2.length; i < len; i++) {
+        ret = args2[i](ret);
+      }
+      return ret;
+    }
+  }
+};
+var Prototype = {
+  pipe() {
+    return pipeArguments(this, arguments);
+  }
+};
+var Base = (function() {
+  function PipeableBase() {
+  }
+  PipeableBase.prototype = Prototype;
+  return PipeableBase;
+})();
 
 // node_modules/effect/dist/esm/Either.js
 var Either_exports = {};
@@ -915,50 +961,6 @@ var redact = (u) => {
   }
   return u;
 };
-
-// node_modules/effect/dist/esm/Pipeable.js
-var pipeArguments = (self, args2) => {
-  switch (args2.length) {
-    case 0:
-      return self;
-    case 1:
-      return args2[0](self);
-    case 2:
-      return args2[1](args2[0](self));
-    case 3:
-      return args2[2](args2[1](args2[0](self)));
-    case 4:
-      return args2[3](args2[2](args2[1](args2[0](self))));
-    case 5:
-      return args2[4](args2[3](args2[2](args2[1](args2[0](self)))));
-    case 6:
-      return args2[5](args2[4](args2[3](args2[2](args2[1](args2[0](self))))));
-    case 7:
-      return args2[6](args2[5](args2[4](args2[3](args2[2](args2[1](args2[0](self)))))));
-    case 8:
-      return args2[7](args2[6](args2[5](args2[4](args2[3](args2[2](args2[1](args2[0](self))))))));
-    case 9:
-      return args2[8](args2[7](args2[6](args2[5](args2[4](args2[3](args2[2](args2[1](args2[0](self)))))))));
-    default: {
-      let ret = self;
-      for (let i = 0, len = args2.length; i < len; i++) {
-        ret = args2[i](ret);
-      }
-      return ret;
-    }
-  }
-};
-var Prototype = {
-  pipe() {
-    return pipeArguments(this, arguments);
-  }
-};
-var Base = (function() {
-  function PipeableBase() {
-  }
-  PipeableBase.prototype = Prototype;
-  return PipeableBase;
-})();
 
 // node_modules/effect/dist/esm/internal/opCodes/effect.js
 var OP_ASYNC = "Async";
@@ -43629,7 +43631,74 @@ var longestPrefixOf = dual(2, (self, key) => {
   return fromNullable2(longestPrefixNode);
 });
 
+// node_modules/@midnight-ntwrk/compact-js/dist/esm/effect/internal/compactContext.js
+var TypeId38 = Symbol();
+var getContractContext = (compiledContract) => compiledContract[TypeId38];
+var createContract = (compiledContract) => Effect_exports.sync(() => {
+  const context10 = getContractContext(compiledContract);
+  if (!context10.ctor)
+    throw new Error("Invalid CompactContext (missing constructor)");
+  return new context10.ctor(context10.witnesses);
+});
+
+// node_modules/@midnight-ntwrk/compact-js/dist/esm/effect/CompiledContract.js
+var TypeId39 = Symbol.for("compact-js/CompiledContract");
+var CompiledContractProto = {
+  [TypeId39]: {
+    _C: (_) => _,
+    _PS: (_) => _,
+    _R: (_) => _
+  },
+  pipe() {
+    return pipeArguments(this, arguments);
+  }
+};
+var make97 = (tag3, ctor) => {
+  const self = Object.create(CompiledContractProto);
+  self.tag = tag3;
+  self[TypeId38] = { ctor };
+  return self;
+};
+var withWitnesses = dual(2, (self, witnesses) => {
+  return {
+    ...self,
+    [TypeId38]: {
+      ...self[TypeId38],
+      witnesses
+    }
+  };
+});
+var withVacantWitnesses = (self) => {
+  return {
+    ...self,
+    [TypeId38]: {
+      ...self[TypeId38],
+      witnesses: {}
+    }
+  };
+};
+var withCompiledFileAssets = dual(2, (self, compiledAssetsPath) => {
+  return {
+    ...self,
+    [TypeId38]: {
+      ...self[TypeId38],
+      compiledAssetsPath
+    }
+  };
+});
+var getCompiledAssetsPath = (self) => {
+  const context10 = getContractContext(self);
+  return context10.compiledAssetsPath;
+};
+
 // node_modules/@midnight-ntwrk/compact-js/dist/esm/effect/Contract.js
+var Contract_exports = {};
+__export(Contract_exports, {
+  ProvableCircuitId: () => ProvableCircuitId,
+  VerifierKey: () => VerifierKey,
+  ZKIR: () => ZKIR,
+  getProvableCircuitIds: () => getProvableCircuitIds
+});
 var VerifierKey = Brand_exports.nominal();
 var ZKIR = Brand_exports.nominal();
 var ProvableCircuitId_ = Brand_exports.nominal();
@@ -43639,12 +43708,12 @@ var getProvableCircuitIds = (contract) => Object.keys(contract.provableCircuits)
 // node_modules/@midnight-ntwrk/compact-js/dist/esm/effect/ContractExecutable.js
 var ContractExecutable_exports = {};
 __export(ContractExecutable_exports, {
-  make: () => make103,
+  make: () => make104,
   provide: () => provide5
 });
 
 // node_modules/@midnight-ntwrk/platform-js/dist/esm/effect/IntegerRange.js
-var TypeId38 = Symbol.for("platform-js/effect/IntegerRange");
+var TypeId40 = Symbol.for("platform-js/effect/IntegerRange");
 var Equivalence6 = struct({
   value: struct({
     _tag: string,
@@ -43652,7 +43721,7 @@ var Equivalence6 = struct({
     max: number
   })
 });
-var isIntegerRange = (u) => hasProperty(u, TypeId38);
+var isIntegerRange = (u) => hasProperty(u, TypeId40);
 var isInclusive = (self) => self.value._tag === "Inclusive";
 var equals6 = dual(2, (self, that) => Equivalence6(self, that));
 var contains7 = dual(2, (self, value7) => {
@@ -43662,11 +43731,11 @@ var contains7 = dual(2, (self, value7) => {
   const { min: min9, max: max11 } = self.value;
   return value7 >= min9 && value7 < max11;
 });
-var from = (input) => make97(input);
+var from = (input) => make98(input);
 var RANGE_REGEXP = /(?<n>\d*)\.\.(?<inc>\=?)(?<x>\d*)/;
 var DEFAULT_ARRAY_INPUT_MODE = "Exclusive";
 var IntegerRangeProto = {
-  [TypeId38]: TypeId38,
+  [TypeId40]: TypeId40,
   [symbol2]() {
     return cached(this, structure(this.value));
   },
@@ -43691,7 +43760,7 @@ var IntegerRangeProto = {
     return pipeArguments(this, arguments);
   }
 };
-var make97 = (input, arrayInputMode) => {
+var make98 = (input, arrayInputMode) => {
   const self = Object.create(IntegerRangeProto);
   if (isIntegerRange(input)) {
     self.value = input.value;
@@ -43725,7 +43794,7 @@ var make97 = (input, arrayInputMode) => {
 };
 
 // node_modules/@effect/platform/dist/esm/Error.js
-var TypeId39 = Symbol.for("@effect/platform/Error");
+var TypeId41 = Symbol.for("@effect/platform/Error");
 var TypeIdError = (typeId, tag3) => {
   class Base4 extends Error4 {
     _tag = tag3;
@@ -43745,7 +43814,7 @@ var BadArgument = class extends TaggedError3("@effect/platform/Error/BadArgument
   /**
    * @since 1.0.0
    */
-  [TypeId39] = TypeId39;
+  [TypeId41] = TypeId41;
   /**
    * @since 1.0.0
    */
@@ -43766,7 +43835,7 @@ var SystemError = class extends TaggedError3("@effect/platform/Error/SystemError
   /**
    * @since 1.0.0
    */
-  [TypeId39] = TypeId39;
+  [TypeId41] = TypeId41;
   /**
    * @since 1.0.0
    */
@@ -43777,10 +43846,10 @@ var SystemError = class extends TaggedError3("@effect/platform/Error/SystemError
 var PlatformError = Union2(BadArgument, SystemError);
 
 // node_modules/@midnight-ntwrk/platform-js/dist/esm/effect/ParseError.js
-var TypeId40 = Symbol.for("platform-js/effect/ParseError");
-var ParseError3 = class extends TypeIdError(TypeId40, "ParseError") {
+var TypeId42 = Symbol.for("platform-js/effect/ParseError");
+var ParseError3 = class extends TypeIdError(TypeId42, "ParseError") {
 };
-var make98 = (message, source, meta, cause3) => new ParseError3({
+var make99 = (message, source, meta, cause3) => new ParseError3({
   message,
   source,
   meta,
@@ -43791,11 +43860,11 @@ var make98 = (message, source, meta, cause3) => new ParseError3({
 var HEX_STRING_REGEXP = /^(?<prefix>(0x)?)(?<byteChars>([0-9A-Fa-f]{2})*)(?<incompleteChars>.*)$/;
 var parseHex = (source) => {
   if (!source) {
-    return left2(make98("Source string must have non-zero length", source));
+    return left2(make99("Source string must have non-zero length", source));
   }
   const match30 = source.match(HEX_STRING_REGEXP);
   if (!match30 || !match30.groups) {
-    return left2(make98(`Source string '${source}' is not a valid hex-string`, source));
+    return left2(make99(`Source string '${source}' is not a valid hex-string`, source));
   }
   const { prefix, byteChars, incompleteChars } = match30.groups;
   const parsedHex = {
@@ -43808,20 +43877,20 @@ var parseHex = (source) => {
   };
   if (parsedHex.incompleteChars) {
     if (parsedHex.incompleteChars.length % 2 > 0) {
-      return left2(make98(`Last byte of source string '${source}' is incomplete`, source, parsedHex));
+      return left2(make99(`Last byte of source string '${source}' is incomplete`, source, parsedHex));
     }
     const invalidCharPos = parsedHex.byteChars.length + (parsedHex.hasPrefix ? 2 : 0);
-    return left2(make98(`Invalid hex-digit '${source[invalidCharPos]}' found in source string at index ${invalidCharPos}`, source, parsedHex));
+    return left2(make99(`Invalid hex-digit '${source[invalidCharPos]}' found in source string at index ${invalidCharPos}`, source, parsedHex));
   }
   if (!parsedHex.byteChars) {
-    return left2(make98(`Source string '${source}' is not a valid hex-string`, source, parsedHex));
+    return left2(make99(`Source string '${source}' is not a valid hex-string`, source, parsedHex));
   }
   return right2(parsedHex);
 };
 var defaultHexConstructionConstraints = {
   requirePrefix: false
 };
-var make99 = (options) => {
+var make100 = (options) => {
   const mergedOptions = { ...defaultHexConstructionConstraints, ...options };
   return refined((source) => match(parseHex(source), {
     onLeft: (error3) => some2(error(error3.message, error3.meta)),
@@ -43845,9 +43914,9 @@ var make99 = (options) => {
 };
 
 // node_modules/@midnight-ntwrk/platform-js/dist/esm/effect/Hex.js
-var PrefixedHex = make99({ requirePrefix: true });
-var PlainHex = make99({ requirePrefix: false });
-var ConstrainedPlainHex = (constraints) => make99({ requirePrefix: false, ...constraints });
+var PrefixedHex = make100({ requirePrefix: true });
+var PlainHex = make100({ requirePrefix: false });
+var ConstrainedPlainHex = (constraints) => make100({ requirePrefix: false, ...constraints });
 
 // node_modules/@midnight-ntwrk/platform-js/dist/esm/effect/CoinPublicKey.js
 var Hex = Brand_exports.all(Brand_exports.nominal(), PlainHex);
@@ -43872,13 +43941,13 @@ var NetworkIdMoniker = Brand_exports.refined((source) => {
 
 // node_modules/@midnight-ntwrk/platform-js/dist/esm/effect/NetworkId.js
 var MAINNET_MONIKER = NetworkIdMoniker("main");
-var TypeId41 = Symbol.for("platform-js/effect/NetworkId");
+var TypeId43 = Symbol.for("platform-js/effect/NetworkId");
 var MonikerSymbol = Symbol.for("platform-js/effect/NetworkId#NetworkMoniker");
 var Equivalence7 = mapInput((a, b) => equals(a, b), (_) => _[MonikerSymbol]);
-var isNetworkId = (u) => hasProperty(u, TypeId41);
+var isNetworkId = (u) => hasProperty(u, TypeId43);
 var equals7 = dual(2, (self, that) => Equivalence7(self, that));
 var NetworkIdProto = (networkMoniker) => ({
-  [TypeId41]: TypeId41,
+  [TypeId43]: TypeId43,
   [symbol3](that) {
     return isNetworkId(that) && equals7(this, that);
   },
@@ -43900,7 +43969,7 @@ var NetworkIdProto = (networkMoniker) => ({
   }
 });
 var MainNet = Object.create(NetworkIdProto(true));
-var make100 = (input) => Object.create(NetworkIdProto(isNetworkId(input) ? input[MonikerSymbol] : input));
+var make101 = (input) => Object.create(NetworkIdProto(isNetworkId(input) ? input[MonikerSymbol] : input));
 
 // node_modules/@midnight-ntwrk/platform-js/dist/esm/effect/SigningKey.js
 var SigningKey = Brand_exports.all(Brand_exports.nominal(), ConstrainedPlainHex({ byteLength: "32..=35" }));
@@ -43923,7 +43992,7 @@ var makeKeys = () => effect(Keys, gen5(function* () {
   });
 }));
 var makeNetwork = () => effect(Network, gen5(function* () {
-  return Network.of(make100(match2(yield* NetworkIdConfig, {
+  return Network.of(make101(match2(yield* NetworkIdConfig, {
     onSome: identity,
     onNone: () => MainNet
   })));
@@ -43931,26 +44000,16 @@ var makeNetwork = () => effect(Network, gen5(function* () {
 var layer = mergeAll6(makeKeys(), makeNetwork());
 
 // node_modules/@midnight-ntwrk/compact-js/dist/esm/effect/ContractConfigurationError.js
-var TypeId42 = Symbol.for("compact-js/effect/ContractConfigurationError");
-var ContractConfigurationError = class extends TypeIdError(TypeId42, "ContractConfigurationError") {
+var TypeId44 = Symbol.for("compact-js/effect/ContractConfigurationError");
+var ContractConfigurationError = class extends TypeIdError(TypeId44, "ContractConfigurationError") {
 };
-var make101 = (message, contractState, cause3) => new ContractConfigurationError({ message, contractState, cause: cause3 });
+var make102 = (message, contractState, cause3) => new ContractConfigurationError({ message, contractState, cause: cause3 });
 
 // node_modules/@midnight-ntwrk/compact-js/dist/esm/effect/ContractRuntimeError.js
-var TypeId43 = Symbol.for("compact-js/effect/ContractRuntimeError");
-var ContractRuntimeError = class extends TypeIdError(TypeId43, "ContractRuntimeError") {
+var TypeId45 = Symbol.for("compact-js/effect/ContractRuntimeError");
+var ContractRuntimeError = class extends TypeIdError(TypeId45, "ContractRuntimeError") {
 };
-var make102 = (message, cause3) => new ContractRuntimeError({ message, cause: cause3 });
-
-// node_modules/@midnight-ntwrk/compact-js/dist/esm/effect/internal/compactContext.js
-var TypeId44 = Symbol();
-var getContractContext = (compiledContract) => compiledContract[TypeId44];
-var createContract = (compiledContract) => Effect_exports.sync(() => {
-  const context10 = getContractContext(compiledContract);
-  if (!context10.ctor)
-    throw new Error("Invalid CompactContext (missing constructor)");
-  return new context10.ctor(context10.witnesses);
-});
+var make103 = (message, cause3) => new ContractRuntimeError({ message, cause: cause3 });
 
 // node_modules/@midnight-ntwrk/compact-js/dist/esm/effect/ZKConfiguration.js
 var ZKConfiguration_exports = {};
@@ -44000,22 +44059,22 @@ var ContractExecutableImpl = class {
           zswapLocalState: decodeZswapLocalState(currentZswapLocalState)
         };
       },
-      catch: (err) => err instanceof CompactError ? make102("Failed to initialize contract", err) : make101("Failed to configure constructor context with coin public key", void 0, err)
+      catch: (err) => err instanceof CompactError ? make103("Failed to initialize contract", err) : make102("Failed to configure constructor context with coin public key", void 0, err)
     }).pipe(Effect_exports.flatMap(({ contractState, privateState, zswapLocalState }) => Effect_exports.gen(this, function* () {
       const verifierKeys = yield* zkConfigReader.getVerifierKeys(getProvableCircuitIds(contract));
       for (const [provableCircuitId, verifierKey] of verifierKeys) {
         if (Option_exports.isNone(verifierKey)) {
-          return yield* make101(`Failed to find a verifier key for circuit '${provableCircuitId}'`, contractState);
+          return yield* make102(`Failed to find a verifier key for circuit '${provableCircuitId}'`, contractState);
         }
         const operation = contractState.operation(provableCircuitId);
         if (!operation) {
-          return yield* make101(`Circuit '${provableCircuitId}' is undefined for the given contract state`, contractState);
+          return yield* make102(`Circuit '${provableCircuitId}' is undefined for the given contract state`, contractState);
         }
         try {
           operation.verifierKey = verifierKey.value;
           contractState.setOperation(provableCircuitId, operation);
         } catch (err) {
-          return yield* make101(`Failed to configure verifier key for circuit '${provableCircuitId}' for the given contract state`, contractState, err);
+          return yield* make102(`Failed to configure verifier key for circuit '${provableCircuitId}' for the given contract state`, contractState, err);
         }
       }
       const [cma, signingKey] = yield* this.createMaintenanceAuthority(keyConfig.getSigningKey());
@@ -44067,7 +44126,7 @@ var ContractExecutableImpl = class {
           zswapLocalState: decodeZswapLocalState(context10.currentZswapLocalState)
         }
       };
-    })), Effect_exports.mapError((err) => make102(`Error executing circuit '${provableCircuitId}'`, err)))), this.transform);
+    })), Effect_exports.mapError((err) => make103(`Error executing circuit '${provableCircuitId}'`, err)))), this.transform);
   }
   getProvableCircuitIds() {
     return getProvableCircuitIds(Effect_exports.runSync(this.createContract()));
@@ -44120,7 +44179,7 @@ var ContractExecutableImpl = class {
     const { address, contractState } = contractContext;
     const currentSigningKey = keyConfig.getSigningKey();
     if (Option_exports.isNone(currentSigningKey)) {
-      return Either_exports.left(make101("Signing key required to authorize contract maintenance update", contractState));
+      return Either_exports.left(make102("Signing key required to authorize contract maintenance update", contractState));
     }
     const update10 = createUpdateFn();
     if (Either_exports.isLeft(update10))
@@ -44146,210 +44205,38 @@ var ContractExecutableImpl = class {
         signingKey
       ]);
     } catch (err) {
-      return Either_exports.left(make101(`Failed to create a signature verifying key for signing key '${signingKey}'`, contractState, err));
+      return Either_exports.left(make102(`Failed to create a signature verifying key for signing key '${signingKey}'`, contractState, err));
     }
   }
   createContract() {
-    return this.contract ??= createContract(this.compiledContract).pipe(Effect_exports.mapError((err) => make102(String(err), err)), Effect_exports.cached, Effect_exports.runSync);
+    return this.contract ??= createContract(this.compiledContract).pipe(Effect_exports.mapError((err) => make103(String(err), err)), Effect_exports.cached, Effect_exports.runSync);
   }
   contract;
   // Backing property for `createContract`.
 };
-var make103 = (compiledContract) => new ContractExecutableImpl(compiledContract);
+var make104 = (compiledContract) => new ContractExecutableImpl(compiledContract);
 var provide5 = dual(2, (self, layer2) => new ContractExecutableImpl(self.compiledContract, (e) => Effect_exports.provide(e, layer2)));
 
-// node_modules/@midnight-ntwrk/platform-js/dist/esm/effect/ContractAddress.js
-var ContractAddress_exports = {};
-__export(ContractAddress_exports, {
-  ContractAddress: () => ContractAddress,
-  asBytes: () => asBytes
-});
-var ContractAddress = Brand_exports.all(Brand_exports.nominal(), ConstrainedPlainHex({ byteLength: "32..=32" }));
-var asBytes = (self) => Buffer.from(self, "hex");
-
-// node_modules/@midnight-ntwrk/compact-js/dist/esm/effect/CompiledContract.js
-var TypeId45 = Symbol.for("compact-js/CompiledContract");
-var CompiledContractProto = {
-  [TypeId45]: {
-    _C: (_) => _,
-    _PS: (_) => _,
-    _R: (_) => _
-  },
-  pipe() {
-    return pipeArguments(this, arguments);
-  }
-};
-var withWitnesses = dual(2, (self, witnesses) => {
-  return {
-    ...self,
-    [TypeId44]: {
-      ...self[TypeId44],
-      witnesses
-    }
-  };
-});
-var withCompiledFileAssets = dual(2, (self, compiledAssetsPath) => {
-  return {
-    ...self,
-    [TypeId44]: {
-      ...self[TypeId44],
-      compiledAssetsPath
-    }
-  };
-});
-
-// node_modules/@midnight-ntwrk/compact-js/dist/esm/effect/ContractExecutableRuntime.js
-var ContractExecutableRuntime_exports = {};
-__export(ContractExecutableRuntime_exports, {
-  make: () => make104
-});
-var make104 = (layer2) => ManagedRuntime_exports.make(layer2);
-
-// node_modules/@midnight-ntwrk/compact-js/dist/esm/effect/ZKConfigurationReadError.js
-var ZKConfigurationReadError_exports = {};
-__export(ZKConfigurationReadError_exports, {
-  ZKConfigurationReadError: () => ZKConfigurationReadError,
-  isReadError: () => isReadError,
-  make: () => make105
-});
-var TypeId46 = Symbol.for("compact-js/effect/ZKConfigurationReadError");
-var ZKConfigurationReadError = class extends TypeIdError(TypeId46, "ZKConfigurationReadError") {
-};
-var isReadError = (u) => hasProperty(u, TypeId46);
-var make105 = (contractTag, provableCircuitId, assetType, cause3) => new ZKConfigurationReadError({
-  contractTag,
-  provableCircuitId,
-  assetType,
-  message: `Failed to read ${assetType.replaceAll("-", " ")} for ${contractTag}#${provableCircuitId}`,
-  cause: cause3
-});
-
-// node_modules/@midnight-ntwrk/platform-js/dist/esm/effect/DomainSeparator.js
-var DomainSeparator = Brand_exports.all(Brand_exports.nominal(), ConstrainedPlainHex({ byteLength: "32..=32" }));
-
-// node_modules/@midnight-ntwrk/midnight-js-types/dist/index.mjs
-var makeAdaptedReader = (zkConfigProvider) => (compiledContract) => Effect_exports.gen(function* () {
-  const getVerifierKey = (provableCircuitId) => Effect_exports.tryPromise({
-    try: () => zkConfigProvider.getVerifierKey(provableCircuitId).then((verifierKey) => Option_exports.some(Contract_exports.VerifierKey(verifierKey))),
-    catch: (err) => ZKConfigurationReadError_exports.make(compiledContract.tag, provableCircuitId, "verifier-key", err)
-  });
-  return {
-    getVerifierKey,
-    getVerifierKeys: (provableCircuitIds) => Effect_exports.forEach(provableCircuitIds, (provableCircuitId) => getVerifierKey(provableCircuitId).pipe(Effect_exports.map((verifierKey) => [provableCircuitId, verifierKey])), { concurrency: "unbounded", discard: false })
-  };
-});
-var makeAdaptedRuntimeLayer = (zkConfigProvider, configMap) => Layer_exports.mergeAll(Layer_exports.succeed(ZKConfiguration_exports.ZKConfiguration, ZKConfiguration_exports.ZKConfiguration.of({
-  createReader: makeAdaptedReader(zkConfigProvider)
-})), layer).pipe(Layer_exports.provide(Layer_exports.setConfigProvider(ConfigProvider_exports.fromMap(configMap, { pathDelim: "_" }).pipe(ConfigProvider_exports.constantCase))));
-var makeContractExecutableRuntime = (zkConfigProvider, options) => {
-  let config2 = [["KEYS_COIN_PUBLIC", options.coinPublicKey]];
-  if (options.signingKey) {
-    config2 = config2.concat([["KEYS_SIGNING", options.signingKey]]);
-  }
-  return ContractExecutableRuntime_exports.make(makeAdaptedRuntimeLayer(zkConfigProvider, new Map(config2)));
-};
-var exitResultOrError = (exit4) => Exit_exports.match(exit4, {
-  onSuccess: (a) => a,
-  onFailure: (cause3) => {
-    if (Cause_exports.isFailType(cause3))
-      throw cause3.error;
-    throw new Error(`Unexpected error: ${Cause_exports.pretty(cause3)}`);
-  }
-});
-var asEffectOption = (obj) => {
-  return Option_exports.some(obj);
-};
-var asContractAddress = (address) => ContractAddress_exports.ContractAddress(address);
-var InvalidProtocolSchemeError = class extends Error {
-  invalidScheme;
-  allowableSchemes;
-  /**
-   * @param invalidScheme The invalid scheme.
-   * @param allowableSchemes The valid schemes that are allowed.
-   */
-  constructor(invalidScheme, allowableSchemes) {
-    super(`Invalid protocol scheme: '${invalidScheme}'. Allowable schemes are one of: ${allowableSchemes.join(",")}`);
-    this.invalidScheme = invalidScheme;
-    this.allowableSchemes = allowableSchemes;
-  }
-};
-var LogLevel;
-(function(LogLevel2) {
-  LogLevel2["INFO"] = "info";
-  LogLevel2["WARN"] = "warn";
-  LogLevel2["ERROR"] = "error";
-  LogLevel2["FATAL"] = "fatal";
-  LogLevel2["DEBUG"] = "debug";
-  LogLevel2["TRACE"] = "trace";
-})(LogLevel || (LogLevel = {}));
-var createProverKey = (uint8Array2) => {
-  return uint8Array2;
-};
-var createVerifierKey = (uint8Array2) => {
-  return uint8Array2;
-};
-var createZKIR = (uint8Array2) => {
-  return uint8Array2;
-};
-var zkConfigToProvingKeyMaterial = (zkConfig) => {
-  return {
-    proverKey: zkConfig.proverKey,
-    verifierKey: zkConfig.verifierKey,
-    ir: zkConfig.zkir
-  };
-};
-var SegmentFail = "SegmentFail";
-var SegmentSuccess = "SegmentSuccess";
-var FailEntirely = "FailEntirely";
-var FailFallible = "FailFallible";
-var SucceedEntirely = "SucceedEntirely";
-var ZKConfigProvider = class {
-  /**
-   * Retrieves the verifier keys produced by `compactc` compiler for the given circuits.
-   * @param circuitIds The circuit IDs of the verifier keys to retrieve.
-   */
-  async getVerifierKeys(circuitIds) {
-    return Promise.all(circuitIds.map(async (id2) => {
-      const key = await this.getVerifierKey(id2);
-      return [id2, key];
-    }));
-  }
-  /**
-   * Retrieves all zero-knowledge artifacts produced by `compactc` compiler for the given circuit.
-   * @param circuitId The circuit ID of the artifacts to retrieve.
-   */
-  async get(circuitId) {
-    return {
-      circuitId,
-      proverKey: await this.getProverKey(circuitId),
-      verifierKey: await this.getVerifierKey(circuitId),
-      zkir: await this.getZKIR(circuitId)
-    };
-  }
-  asKeyMaterialProvider() {
-    return this;
-  }
-};
-
 export {
+  hasProperty,
+  Option_exports,
+  Brand_exports,
+  Exit_exports,
+  Cause_exports,
+  Effect_exports,
+  Layer_exports,
+  ConfigProvider_exports,
+  ManagedRuntime_exports,
+  CompiledContract_exports,
   VerifierKey,
+  ZKIR,
   ProvableCircuitId,
-  ContractExecutable_exports,
-  ContractAddress,
-  makeContractExecutableRuntime,
-  exitResultOrError,
-  asEffectOption,
-  asContractAddress,
-  InvalidProtocolSchemeError,
-  createProverKey,
-  createVerifierKey,
-  createZKIR,
-  zkConfigToProvingKeyMaterial,
-  SegmentFail,
-  SegmentSuccess,
-  FailEntirely,
-  FailFallible,
-  SucceedEntirely,
-  ZKConfigProvider
+  getProvableCircuitIds,
+  Contract_exports,
+  TypeIdError,
+  ConstrainedPlainHex,
+  layer,
+  ZKConfiguration_exports,
+  ContractExecutable_exports
 };
-//# sourceMappingURL=chunk-HFDXAY5J.js.map
+//# sourceMappingURL=chunk-JRVBLNMT.js.map

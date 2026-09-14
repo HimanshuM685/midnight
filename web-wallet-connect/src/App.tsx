@@ -16,19 +16,14 @@ import {
   AlertCircle,
   RefreshCw,
   ArrowRight,
-  Lock,
   RotateCw,
   Info,
 } from "lucide-react";
 import "./App.css";
 
-const DEFAULT_RECIPIENT =
-  "mn_addr_preprod1qz603evv82d8q7c040d9hswvx774hkmz7v9593z7v8fwn62g6f5su3a07t";
-
 export default function App() {
   const [walletSession, setWalletSession] = useState<ConnectedWebWalletSession | null>(null);
   const [connecting, setConnecting] = useState(false);
-  const [recipientAddress, setRecipientAddress] = useState(DEFAULT_RECIPIENT);
   const [deploying, setDeploying] = useState(false);
   const [progress, setProgress] = useState<DeploymentProgress | null>(null);
   const [deployedContract, setDeployedContract] = useState<{
@@ -75,8 +70,8 @@ export default function App() {
   };
 
   const handleDeploy = async () => {
-    if (!recipientAddress.trim()) {
-      alert("Please specify a pay-to-address.");
+    if (!walletSession) {
+      setError("Connect Lace on Preprod before deploying.");
       return;
     }
 
@@ -87,7 +82,6 @@ export default function App() {
 
     try {
       const result = await deployContractFromWebWallet(walletSession, {
-        recipientAddress,
         networkId: "preprod",
         onProgress: (p) => setProgress(p),
       });
@@ -120,8 +114,8 @@ export default function App() {
         </div>
         <h1 className="title">Instant Contract Deployer</h1>
         <p className="subtitle">
-          Connect your web wallet (Lace) and hit <strong>Deploy</strong> to get a freshly deployed
-          Preprod contract address in seconds. No complex CLI scripts or slow sync times.
+          Connect Lace and deploy the real Compact contract to Preprod. The contract recipient is
+          always your connected wallet&apos;s <strong>unshielded address</strong>.
         </p>
       </header>
 
@@ -146,7 +140,11 @@ export default function App() {
               <div>
                 <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Connected Account</div>
                 <div className="wallet-address">
-                  {walletSession.account.address.slice(0, 16)}...{walletSession.account.address.slice(-8)}
+                  {walletSession.account.unshieldedAddress.slice(0, 16)}...
+                  {walletSession.account.unshieldedAddress.slice(-8)}
+                </div>
+                <div style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>
+                  Unshielded Preprod address
                 </div>
               </div>
             ) : (
@@ -223,9 +221,6 @@ export default function App() {
               <div className="guide-item">
                 <span>&bull; <strong>2. Chrome Site Access:</strong> Click the Lace icon in your Chrome top bar to grant access to this tab.</span>
               </div>
-              <div className="guide-item">
-                <span>&bull; <strong>3. Or Deploy Directly:</strong> You can click <em>Deploy Tip Jar Contract Now</em> below right now — no waiting required!</span>
-              </div>
             </div>
           </div>
         )}
@@ -238,27 +233,21 @@ export default function App() {
           <span>Step 2: Deploy to Midnight Preprod</span>
         </h2>
         <p className="card-desc">
-          Configure the tip recipient address (can also be changed later via your frontend <code>.env</code>).
+          Lace balances, authorizes, and submits the deployment. There is no simulated or fallback
+          deployment path.
         </p>
 
-        <div className="form-group">
-          <label className="label">
-            <Lock size={13} style={{ display: "inline", marginRight: "0.3rem" }} />
-            Pay-To-Address (Tip Destination)
-          </label>
-          <input
-            type="text"
-            className="input"
-            value={recipientAddress}
-            onChange={(e) => setRecipientAddress(e.target.value)}
-            placeholder="mn_addr_preprod1..."
-          />
-        </div>
+        {walletSession && (
+          <div className="form-group">
+            <label className="label">Contract recipient (connected unshielded address)</label>
+            <div className="address-code">{walletSession.account.unshieldedAddress}</div>
+          </div>
+        )}
 
         <button
           className="btn btn-primary"
           onClick={handleDeploy}
-          disabled={deploying}
+          disabled={!walletSession || deploying}
         >
           {deploying ? (
             <>
@@ -268,11 +257,7 @@ export default function App() {
           ) : (
             <>
               <Rocket size={18} />
-              <span>
-                {walletSession
-                  ? "Deploy Tip Jar Contract (via Lace Wallet)"
-                  : "Deploy Tip Jar Contract (Instant Preprod Deploy)"}
-              </span>
+              <span>{walletSession ? "Deploy Real Contract via Lace" : "Connect Lace to Deploy"}</span>
               <ArrowRight size={16} />
             </>
           )}
@@ -327,14 +312,14 @@ export default function App() {
               <strong>Step 3: Paste this into your main frontend <code>.env</code>:</strong>
               <pre>
 {`VITE_CONTRACT_ADDRESS="${deployedContract.contractAddress}"
-VITE_RECIPIENT_ADDRESS="${recipientAddress}"`}
+VITE_RECIPIENT_ADDRESS="${walletSession?.account.unshieldedAddress ?? ""}"`}
               </pre>
               <div style={{ marginTop: "1rem", display: "flex", gap: "0.75rem" }}>
                 <button
                   className="btn btn-secondary btn-sm"
                   onClick={() =>
                     copyToClipboard(
-                      `VITE_CONTRACT_ADDRESS="${deployedContract.contractAddress}"\nVITE_RECIPIENT_ADDRESS="${recipientAddress}"`
+                      `VITE_CONTRACT_ADDRESS="${deployedContract.contractAddress}"\nVITE_RECIPIENT_ADDRESS="${walletSession?.account.unshieldedAddress ?? ""}"`
                     )
                   }
                 >

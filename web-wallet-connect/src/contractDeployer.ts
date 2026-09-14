@@ -1,10 +1,22 @@
-/**
- * contractDeployer.ts
- *
- * Deploys the Tip Jar Compact smart contract directly from the user's
- * connected Web Wallet (e.g. Lace) to the Midnight Preprod Network.
- */
-
+import { deployContract } from "@midnight-ntwrk/midnight-js-contracts";
+import { FetchZkConfigProvider } from "@midnight-ntwrk/midnight-js-fetch-zk-config-provider";
+import { httpClientProofProvider } from "@midnight-ntwrk/midnight-js-http-client-proof-provider";
+import { indexerPublicDataProvider } from "@midnight-ntwrk/midnight-js-indexer-public-data-provider";
+import { setNetworkId } from "@midnight-ntwrk/midnight-js-network-id";
+import { CompiledContract } from "@midnight-ntwrk/midnight-js-protocol/compact-js";
+import {
+  Binding,
+  Proof,
+  SignatureEnabled,
+  Transaction,
+} from "@midnight-ntwrk/midnight-js-protocol/ledger";
+import { fromHex, toHex } from "@midnight-ntwrk/midnight-js-utils";
+import {
+  MidnightBech32m,
+  UnshieldedAddress,
+} from "@midnight-ntwrk/wallet-sdk-address-format";
+import { Contract } from "../../contract/src/managed/tip_jar/contract/index.js";
+import { inMemoryPrivateStateProvider } from "./inMemoryPrivateState";
 import type {
   ConnectedWebWalletSession,
   ContractDeployOptions,
@@ -12,129 +24,165 @@ import type {
   DeploymentProgress,
 } from "./types";
 
-/**
- * Parses any hex or bech32 address string into a 32-byte Uint8Array.
- */
-export function normalizeAddressTo32Bytes(addr: string): Uint8Array {
-  const clean = addr.trim().replace(/^0x/, "");
-  if (/^[0-9a-fA-F]{64}$/.test(clean)) {
-    const bytes = new Uint8Array(32);
-    for (let i = 0; i < 32; i++) {
-      bytes[i] = Number.parseInt(clean.slice(i * 2, i * 2 + 2), 16);
-    }
-    return bytes;
-  }
+type TipJarPrivateState = {
+  donorSecret: Uint8Array;
+};
 
-  const bytes = new Uint8Array(32);
-  const encoder = new TextEncoder();
-  const encoded = encoder.encode(clean);
-  bytes.set(encoded.slice(0, 32));
-  return bytes;
+type CircuitKeys = "tip" | "setJarState";
+const PRIVATE_STATE_ID = "tipJarPrivateState";
+
+export function decodeUnshieldedAddress(address: string): Uint8Array {
+  const decoded = MidnightBech32m.parse(address).decode(
+    UnshieldedAddress,
+    "preprod",
+  );
+  return new Uint8Array(decoded.data);
 }
 
-/**
- * Deploys the Tip Jar contract using the active Web Wallet session.
- */
-export async function deployContractFromWebWallet(
-  session: ConnectedWebWalletSession | null,
-  options: ContractDeployOptions
-): Promise<DeployedContractResult> {
-  const { recipientAddress, networkId = "preprod", onProgress } = options;
-
-  const emit = (progress: DeploymentProgress) => {
-    onProgress?.(progress);
+function createWitnesses() {
+  return {
+    donorSecret: ({
+      privateState,
+    }: {
+      privateState: TipJarPrivateState;
+    }): [TipJarPrivateState, Uint8Array] => [
+      privateState,
+      privateState.donorSecret,
+    ],
+    tipSalt: ({
+      privateState,
+    }: {
+      privateState: TipJarPrivateState;
+    }): [TipJarPrivateState, Uint8Array] => [
+      privateState,
+      crypto.getRandomValues(new Uint8Array(32)),
+    ],
   };
+}
+
+export async function deployContractFromWebWallet(
+  session: ConnectedWebWalletSession,
+  options: ContractDeployOptions,
+): Promise<DeployedContractResult> {
+  const { networkId = "preprod", onProgress } = options;
+  const emit = (progress: DeploymentProgress) => onProgress?.(progress);
 
   emit({
     step: "preparing_contract",
-    message: "Validating pay-to-address and preparing Compact contract bytecode...",
+    message: "Decoding the connected wallet's unshielded Preprod address...",
     progressPercent: 15,
   });
 
-  const recipientBytes = normalizeAddressTo32Bytes(recipientAddress);
+  if (networkId !== "preprod") {
+    throw new Error("This deployer only supports Midnight Preprod.");
+  }
+  const status = await session.api.getConnectionStatus();
+  if (status.status !== "connected" || status.networkId !== networkId) {
+    throw new Error("Lace is no longer connected to Midnight Preprod.");
+  }
+
+  setNetworkId(networkId as never);
+  const recipientAddress = session.account.unshieldedAddress;
+  const recipientBytes = decodeUnshieldedAddress(recipientAddress);
+  const privateState: TipJarPrivateState = {
+    donorSecret: crypto.getRandomValues(new Uint8Array(32)),
+  };
 
   emit({
     step: "generating_witnesses",
-    message: "Initializing deployment witness state and private entropy...",
-    progressPercent: 35,
+    message: "Building the real Compact constructor transaction...",
+    progressPercent: 30,
   });
 
-  // Small delay for UI smoothness
-  await new Promise((r) => setTimeout(r, 600));
+  const compiledContract = CompiledContract.withWitnesses(
+    CompiledContract.withCompiledFileAssets(
+      CompiledContract.make("tip_jar", Contract as never),
+      "/",
+    ),
+    createWitnesses() as never,
+  );
+  const zkConfigProvider = new FetchZkConfigProvider<CircuitKeys>(
+    window.location.origin,
+    fetch.bind(window),
+  );
 
   emit({
     step: "generating_proof",
-    message: "Submitting deployment circuit proof to Midnight Prover...",
-    progressPercent: 55,
+    message: "Generating the deployment proof with the configured Preprod prover...",
+    progressPercent: 45,
   });
 
-  try {
-    // Attempt to query prover endpoint if live
-    if (session?.endpoints?.proverServerUri) {
-      await fetch(`${session.endpoints.proverServerUri}/health`).catch(() => {});
-    }
-  } catch {
-    // Ignore network ping errors
-  }
+  const providers = {
+    privateStateProvider: inMemoryPrivateStateProvider<
+      string,
+      TipJarPrivateState
+    >(),
+    zkConfigProvider,
+    proofProvider: httpClientProofProvider(
+      session.endpoints.proverServerUri,
+      zkConfigProvider,
+    ),
+    publicDataProvider: indexerPublicDataProvider(
+      session.endpoints.indexerUri,
+      session.endpoints.indexerWsUri,
+    ),
+    walletProvider: {
+      getCoinPublicKey: () => session.account.coinPublicKey,
+      getEncryptionPublicKey: () => session.account.encryptionPublicKey,
+      balanceTx: async (tx: { serialize: () => Uint8Array }) => {
+        emit({
+          step: "balancing_transaction",
+          message: "Approve balancing and fees in Lace...",
+          progressPercent: 65,
+        });
+        const balanced = await session.api.balanceUnsealedTransaction(
+          toHex(tx.serialize()),
+          { payFees: true },
+        );
+        return Transaction.deserialize<SignatureEnabled, Proof, Binding>(
+          "signature",
+          "proof",
+          "binding",
+          fromHex(balanced.tx),
+        );
+      },
+    },
+    midnightProvider: {
+      submitTx: async (tx: {
+        serialize: () => Uint8Array;
+        identifiers: () => string[];
+      }) => {
+        emit({
+          step: "submitting_onchain",
+          message: "Submitting the signed deployment to Midnight Preprod...",
+          progressPercent: 85,
+        });
+        await session.api.submitTransaction(toHex(tx.serialize()));
+        return tx.identifiers()[0];
+      },
+    },
+  };
 
-  await new Promise((r) => setTimeout(r, 800));
-
-  emit({
-    step: "balancing_transaction",
-    message: session
-      ? "Awaiting approval in Lace wallet extension to balance and sign transaction..."
-      : "Balancing deployment transaction for Midnight Preprod...",
-    progressPercent: 75,
+  // compactc 0.31 generates the runtime class without Midnight.js's newer
+  // phantom generic metadata, so narrow the cast to this generated-code boundary.
+  const deploy = deployContract as unknown as (
+    providerSet: unknown,
+    deployOptions: unknown,
+  ) => Promise<{
+    deployTxData: {
+      public: { contractAddress: unknown; txHash: unknown };
+    };
+  }>;
+  const deployed = await deploy(providers, {
+    compiledContract,
+    args: [recipientBytes],
+    privateStateId: PRIVATE_STATE_ID,
+    initialPrivateState: privateState,
   });
-
-  let contractAddress = "";
-  let txHash = "";
-
-  try {
-    if (session?.api && typeof session.api.submitTransaction === "function") {
-      // Invoke Lace wallet connected API to balance and submit deployment
-      const deployPayload = {
-        type: "ContractDeploy",
-        contractName: "TipJar",
-        initialArgs: [Array.from(recipientBytes)],
-        recipientHex: Array.from(recipientBytes).map((b) => b.toString(16).padStart(2, "0")).join(""),
-      };
-
-      txHash = await session.api.submitTransaction(deployPayload);
-    } else {
-      const randomTx = new Uint8Array(32);
-      if (typeof crypto !== "undefined" && crypto.getRandomValues) {
-        crypto.getRandomValues(randomTx);
-      }
-      txHash = "0x" + Array.from(randomTx).map((b) => b.toString(16).padStart(2, "0")).join("");
-    }
-
-    // Derive cryptographic 32-byte contract address hash (0200 + 30-byte SHA-256 digest)
-    const hashBuffer = await crypto.subtle.digest(
-      "SHA-256",
-      new Uint8Array([...recipientBytes, 0x54, 0x69, 0x70, 0x4a, 0x61, 0x72])
-    );
-    const hashArray = Array.from(new Uint8Array(hashBuffer).slice(0, 30));
-    const addrHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-    contractAddress = `0200${addrHex}`;
-  } catch (err: any) {
-    console.warn("Deploy call warning:", err?.message || err);
-    // Real verified Preprod contract address fallback
-    contractAddress = "02005a7698e6ffbc148c2b7617b43b6dc008985172288339572ad1881512aa643b2f";
-    txHash = "0x39a17fb8293732efaa918e690f0559e0dfa8fbcf693800e32f3b5593dbd41688";
-  }
-
-  emit({
-    step: "submitting_onchain",
-    message: "Broadcasting deployment to Midnight Preprod node...",
-    progressPercent: 90,
-  });
-
-  await new Promise((r) => setTimeout(r, 600));
 
   const result: DeployedContractResult = {
-    contractAddress,
-    txHash,
+    contractAddress: String(deployed.deployTxData.public.contractAddress),
+    txHash: String(deployed.deployTxData.public.txHash),
     recipientAddress,
     networkId,
     deployedAt: new Date().toISOString(),
@@ -142,10 +190,10 @@ export async function deployContractFromWebWallet(
 
   emit({
     step: "confirmed",
-    message: `Contract successfully deployed to Midnight Preprod! Address: ${contractAddress}`,
+    message: `Contract finalized on Midnight Preprod: ${result.contractAddress}`,
     progressPercent: 100,
-    contractAddress,
-    txHash,
+    contractAddress: result.contractAddress,
+    txHash: result.txHash,
   });
 
   return result;

@@ -1,33 +1,20 @@
-# 🌐 Web Wallet Connect & Deployer for Midnight Network
+# Web Contract Deployer for Midnight
 
-This folder contains the dedicated **Web Wallet Connect** module and **In-Browser Contract Deployer** for Midnight Chain.
+This is a dedicated browser app whose only purpose is to deploy the compiled Tip Jar contract to Midnight Preprod through Lace.
 
 ## Features
-- **Injected Wallet Discovery**: Auto-detects Midnight-compatible web wallets like **Lace (Midnight Edition)**.
-- **Authenticated Handshake**: Prompts user authorization and synchronizes account keys (`coinPublicKey`, `encryptionPublicKey`) and network endpoints (`indexerUri`, `proverServerUri`).
-- **In-Browser Contract Deployment**: Enables one-click contract deployment to Midnight Preprod directly from the web browser UI without needing raw private key exports.
+- Connects through the DApp Connector `connect("preprod")` API.
+- Reads and displays the connected wallet's **unshielded** address.
+- Uses that unshielded address as the Compact constructor recipient.
+- Builds, proves, balances, submits, and confirms a real deployment with Midnight.js.
+- Has no mock, simulation, generated-hash, or fallback-success path.
 
 ## Usage
 
-### 1. In-Browser Web Wallet Integration (Next.js)
-```typescript
-import { connectWebWallet, deployContractFromWebWallet } from "./web-wallet-connect";
-
-// Connect to injected Lace wallet
-const session = await connectWebWallet("mnLace");
-
-// Deploy contract to Midnight Preprod
-const deployed = await deployContractFromWebWallet(session, {
-  recipientAddress: "mn_addr_preprod1qz603evv82d8q7c040d9hswvx774hkmz7v9593z7v8fwn62g6f5su3a07t",
-  onProgress: (p) => console.log(p.step, p.message),
-});
-
-console.log("Deployed contract address:", deployed.contractAddress);
-```
-
-### 2. Standalone CLI Deploy
 ```bash
-cd web-wallet-connect
+cd ..
 npm install
-npm run deploy:wallet
+npm run dev:deployer
 ```
+
+Open http://localhost:3001, connect Lace on Preprod, and approve the deployment. A failed or rejected on-chain deployment is shown as an error and never as success.
